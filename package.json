@@ -1,0 +1,165 @@
+{
+  "name": "react-sandbox-v2",
+  "version": "0.0.1",
+  "description": "Updated version of the React-Sandbox with updated packages and methods",
+  "main": "index.js",
+  "repository": "https://github.com/abarcenas29/react-sandbox-v2",
+  "license": "MIT",
+  "scripts": {
+    "git:submodules": "git submodule update --init --recursive",
+    "build:prod": "rimraf ./build/* && cross-env NODE_ENV=production && webpack --config internals/webpack.config.js --mode production --progress",
+    "postinstall": "rimraf node_modules/jest-runtime/node_modules/babel-core node_modules/jest-config/node_modules/babel-core && npm run git:submodules",
+    "start:dev": "cross-env NODE_ENV=development && rimraf ./build/* && webpack-dev-server --config internals/webpack.config.js --mode development --open --hot",
+    "test": "cross-env NODE_ENV=test && jest --colors"
+  },
+  "dependencies": {
+    "clean-webpack-plugin": "^3.0.0",
+    "crypto-js": "^3.1.9-1",
+    "final-form": "*",
+    "graphql": "*",
+    "react": "*",
+    "react-dom": "*",
+    "react-final-form": "*",
+    "react-helmet": "*",
+    "react-intl": "*",
+    "react-redux": "*",
+    "react-redux-toastr": "*",
+    "react-relay": "*",
+    "redux": "*",
+    "redux-actions": "*",
+    "rxjs": "*",
+    "semantic-ui-css": "^2.4.1",
+    "semantic-ui-react": "^0.88.1",
+    "workbox-webpack-plugin": "^4.3.1"
+  },
+  "devDependencies": {
+    "@babel/core": "*",
+    "@babel/plugin-proposal-class-properties": "*",
+    "@babel/plugin-proposal-object-rest-spread": "*",
+    "@babel/plugin-syntax-dynamic-import": "*",
+    "@babel/plugin-transform-modules-commonjs": "*",
+    "@babel/preset-env": "*",
+    "@babel/preset-flow": "*",
+    "@babel/preset-react": "*",
+    "@hot-loader/react-dom": "*",
+    "autoprefixer": "*",
+    "babel-core": "7.0.0-bridge.0",
+    "babel-eslint": "*",
+    "babel-loader": "*",
+    "babel-preset-env": "*",
+    "babel-preset-react": "*",
+    "copy-webpack-plugin": "^5.1.1",
+    "cross-env": "*",
+    "css-loader": "*",
+    "dotenv": "*",
+    "dotenv-webpack": "*",
+    "eslint": "*",
+    "eslint-config-standard": "*",
+    "eslint-config-standard-react": "*",
+    "eslint-plugin-import": "*",
+    "eslint-plugin-node": "*",
+    "eslint-plugin-promise": "*",
+    "eslint-plugin-react": "*",
+    "eslint-plugin-standard": "*",
+    "file-loader": "*",
+    "html-webpack-plugin": "*",
+    "jest": "*",
+    "mini-css-extract-plugin": "*",
+    "node-sass": "*",
+    "postcss-loader": "*",
+    "prettier": "*",
+    "react-hot-loader": "*",
+    "react-loadable": "*",
+    "react-router-dom": "*",
+    "redux-devtools-extension": "*",
+    "relay-compiler": "^8.0.0",
+    "relay-config": "*",
+    "relay-hooks": "*",
+    "relay-runtime": "*",
+    "rimraf": "*",
+    "sanitize.css": "^11.0.0",
+    "sass": "*",
+    "sass-loader": "*",
+    "style-loader": "*",
+    "styled-components": "*",
+    "webpack": "*",
+    "webpack-cli": "*",
+    "webpack-dev-server": "*"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env",
+      "@babel/preset-react"
+    ],
+    "plugins": [
+      "@babel/plugin-proposal-class-properties",
+      "@babel/plugin-proposal-object-rest-spread",
+      "@babel/plugin-syntax-dynamic-import"
+    ],
+    "env": {
+      "development": {
+        "plugins": [
+          "react-hot-loader/babel"
+        ]
+      },
+      "production": {
+        "presets": [
+          [
+            "@babel/preset-env",
+            {
+              "modules": false
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "eslintConfig": {
+    "parser": "babel-eslint",
+    "extends": [
+      "standard",
+      "standard-react"
+    ],
+    "plugins": [
+      "react"
+    ],
+    "globals": {
+      "workbox": true,
+      "self": true
+    },
+    "rules": {
+      "react/prop-types": 0,
+      "camelcase": [
+        1,
+        {
+          "ignoreDestructuring": true
+        }
+      ]
+    }
+  },
+  "jest": {
+    "verbose": true,
+    "moduleNameMapper": {
+      "^Components(.*)$": "<rootDir>/app/components$1",
+      "^Containers(.*)$": "<rootDir>/app/containers$1",
+      "^Helpers(.*)$": "<rootDir>/app/helpers$1",
+      "^Modules(.*)$": "<rootDir>/app/modules$1",
+      "^Styles(.*)$": "<rootDir>/app/styles$1",
+      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/__mocks__/fileMock.js",
+      "\\.(css|less|scss)$": "<rootDir>/__mocks__/styleMock.js"
+    }
+  },
+  "prettier": {
+    "semi": false,
+    "singleQute": true,
+    "tabWidth": 2,
+    "trailingComma": "none",
+    "useTabs": false
+  },
+  "resolutions": {
+    "babel-core": "7.0.0-bridge.0"
+  },
+  "testPathIgnorePatterns": [
+    "<rootDir>/node_modules"
+  ]
+}

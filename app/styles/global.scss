@@ -1,0 +1,274 @@
+@import 'variables.scss';
+@import 'mixins.scss';
+
+body {
+  background-color: #DDD;
+
+  font-size: #{$fontSizeBase}px;
+
+  @media (min-width: $l-2col) {
+    font-size: #{$fontSizeTablet}px;
+  }
+
+  @media (min-width: $l-3col) {
+    font-size: #{$fontSizeLaptop}px;
+  }
+
+  @media (min-width: $l-4col) {
+    font-size: #{$fontSizeWide}px;
+  }
+
+  line-height: #{$baseline}rem;
+
+  // headings
+  h1,h2,h3,h4,h5,h6 {
+    font-weight: 400;
+  }
+
+  h1,.h1 {
+    font-size: #{(1 * ($typescale * 4))}rem;
+    line-height: #{$baseline * 2}rem;
+    margin: #{$baseline}rem 0;
+  }
+
+  h2,.h2 {
+    font-size: #{(1 * ($typescale * 3))}rem;
+    line-height: #{$baseline * 1.5}rem;
+    margin: 0 0 #{$baseline * 0.5}rem 0;
+  }
+
+  h3,.h3 {
+    font-size: #{(1 * ($typescale * 2))}rem;
+    line-height: #{$baseline}rem;
+    margin: 0 0 #{$baseline / 2}rem 0;
+  }
+
+  h4,.h4 {
+    font-size: #{(1 * ($typescale))}rem;
+    line-height: #{$baseline * 2}rem;
+    margin: #{$baseline}rem 0;
+  }
+
+  h5, .h5 {
+    font-size: 1rem;
+    line-height: #{$baseline / 2}rem;
+    margin: 0 0 #{baseline / 2}rem 0;
+  }
+
+  p,
+  ul,
+  ol,
+  pre,
+  table,
+  blockquote {
+    font-size: 1rem;
+    font-weight: 300;
+    margin-top: 0rem;
+    line-height: $baseline;
+    margin-bottom: $baseline;
+  }
+
+  ul ul,
+  ol ol,
+  ul ol,
+  ol ul {
+    margin-top: 0rem;
+    margin-bottom: 0rem;
+  }
+
+  p > a,
+  b,
+  i,
+  strong,
+  em,
+  small,
+  code {
+    line-height: 0;
+  }
+}
+
+.l {
+  $displayProperty: (
+    'd-n': none, 
+    'd-b': block, 
+    'd-f': flex, 
+    'd-i': inline, 
+    'd-if': inline-flex, 
+    'd-ib': inline-block
+  );
+  // display
+  @include createSubClass($displayProperty, 'display');
+
+  $flexDirectionProperty: (
+    'fd-col': column,
+    'fd-col-reverse': column-reverse,
+    'fd-row': row,
+    'fd-row-reverse': row-reverse
+  );
+  // flex
+  @include createSubClass($flexDirectionProperty, 'flex-direction');
+
+  $flexWrapProperty: (
+    'fw-w'  : wrap,
+    'fw-wr' : wrap-reverse,
+    'fw-nw' : no-wrap
+  );
+  @include createSubClass($flexWrapProperty, 'flex-wrap');
+
+  $flexAlignProperty: (
+    'ai-cen': center,
+    'ai-fs' : flex-start,
+    'ai-fe' : flex-end,
+    'ai-str': flex-stretch
+  );
+  // aligns
+  @include createSubClass($flexAlignProperty, 'align-items');
+
+  $flexSelfAlignProperty: (
+    'as-cen': center,
+    'as-fs' : flex-start,
+    'as-fe' : flex-end,
+    'as-str': flex-stretch
+  );
+  // align-self
+  @include createSubClass($flexSelfAlignProperty, 'align-self');
+
+  $justifyContentProperty: (
+    'jc-fs' : flex-start,
+    'jc-fe' : flex-end,
+    'jc-cen': center,
+    'jc-sb' : space-between,
+    'jc-sa' : space-around
+  );
+  // justify-content
+  @include createSubClass($justifyContentProperty, 'justify-content');
+
+  // position
+  &-p-rel {
+    @include media ('position', relative);
+  }
+
+  &-p-fix {
+    @include media ('position', fixed);
+  }
+
+
+  $widthProperties: (
+    'w-100' : 100%,
+    'w-col' : $l-col,
+    'w-1col': $l-col,
+    'w-2col': $l-2col,
+    'w-3col': $l-3col,
+    'w-4col': $l-4col
+  );
+  // width
+  @include createSubClass($widthProperties, 'width');
+
+  // margins, padding
+  $gridSpaces:(
+    '0': 0,
+    '1': $gridSpace,
+    '2': $gridSpace * 2,
+    '3': $gridSpace * 3,
+    '4': $gridSpace * 4,
+    '5': $gridSpace * 5,
+    '6': $gridSpace * 6,
+    '7': $gridSpace * 7
+  );
+  @include sizingGenerator($gridSpaces, 'margin', 'ma');
+  @include sizingGenerator($gridSpaces, 'margin-left', 'ml');
+  @include sizingGenerator($gridSpaces, 'margin-right', 'mr');
+  @include sizingGenerator($gridSpaces, 'margin-top', 'mt');
+  @include sizingGenerator($gridSpaces, 'margin-bottom', 'mb');
+
+  @include sizingGenerator($gridSpaces, 'padding', 'pa');
+  @include sizingGenerator($gridSpaces, 'padding-left', 'pl');
+  @include sizingGenerator($gridSpaces, 'padding-right', 'pr');
+  @include sizingGenerator($gridSpaces, 'padding-top', 'pt');
+  @include sizingGenerator($gridSpaces, 'padding-bottom', 'pb');
+
+  &-mh-auto {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  &-mv-auto {
+    margin-top: auto;
+    margin-right: auto;
+  }
+
+  &-ph-auto {
+    padding-left: auto;
+    padding-right: auto;
+  }
+  &-pv-auto {
+    padding-top: auto;
+    padding-bottom: auto;
+  }
+
+  // overflow
+  &-o-h {
+    overflow: hidden;
+  }
+
+  // list style type
+  &-lst-n {
+    list-style-type: none;
+  }
+}
+
+// font
+.f {
+  &-bold {
+    font-weight: bold;
+  }
+  &-italic {
+    font-style: italic;
+  }
+  &-light {
+    font-weight: lighter;
+  }
+
+  &-underline {
+    text-decoration: underline;
+  }
+  &-uppercase {
+    text-transform: uppercase;
+  }
+  &-capitalize {
+    text-transform: capitalize;
+  }
+
+  // align
+  &-left {
+    text-align: left;
+  }
+  &-right {
+    text-align: right;
+  }
+  &-center {
+    text-align: center;
+  }
+
+  // sizing
+  &-major {
+    font-weight: 300;
+    font-size: #{1 * ($typescale * 6)}rem;
+    line-height: $baseline * 2.5;
+  }
+
+  &-minor {
+    font-size: #{1 / $typescale}rem;
+    line-height: #{$baseline}rem;
+    
+    margin-bottom: #{$baseline}rem;
+    margin-top: 0;
+  }
+
+  &-mini {
+    font-size: #{1 / $typescale / $typescale}rem;
+    line-height: #{$baseline / 2};
+    
+    margin-bottom: #{$baseline / 2};
+    margin-top: 0;
+  }
+}

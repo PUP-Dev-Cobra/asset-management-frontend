@@ -1,0 +1,24 @@
+// columns
+// Note: could be changed.
+
+$l-col  : 312px;
+$l-1col : $l-col * 1;
+$l-2col : $l-col * 2;
+$l-3col : $l-col * 3;
+$l-4col : $l-col * 4;
+
+$typescale    : 1.25;
+$baselineratio: 1.778; // 16 / 9
+
+$baseFontValue      : 24;
+$baseFontValueLaptop: 32;
+$baseFontValueTablet: 28;
+$baseFontValueWide  : 36;
+
+$baseline       : ($baselineratio * 1);
+$fontSizeBase   : $baseFontValue / $baselineratio;
+$fontSizeTablet : $baseFontValueTablet / $baselineratio;
+$fontSizeLaptop : $baseFontValueLaptop / $baselineratio;
+$fontSizeWide   : $baseFontValueWide / $baselineratio;
+
+$gridSpace: $baselineratio / 2;
