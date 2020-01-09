@@ -1,20 +1,33 @@
 import React from 'react'
-import { Grid, Input, Label, Button, Table, Pagination } from 'semantic-ui-react'
+import { Grid, Input, Label, Button, Table, Pagination ,Icon, Segment} from 'semantic-ui-react'
 
 export default () => {
   return (
-    <Grid centered verticalAlign='middle'>
+    <Grid centered style={{ height: '90vh'}} verticalAlign='middle'>
       <Grid.Column computer={13}>
+        <Segment stacked>
         <Grid textAlign='left'>
-          <Grid.Row>
-            <Grid.Column computer={4}>
+          <Grid.Row style={{ paddingBottom: "1rem" }}>
+            <Grid.Column computer={3}>
               <Input icon='search' iconPosition='left' placeholder='search' />
             </Grid.Column>
-            <Grid.Column computer={12} verticalAlign='middle'>
+            <Grid.Column computer={10} verticalAlign='middle'>
               <Label as='a' tag>Filter 1</Label>
               <Label as='a' tag>Filter 2</Label>
               <Label as='a' tag>Filter 3</Label>
             </Grid.Column>
+            <Grid.Column computer={2} verticalAlign ='right'>
+              <Button>
+                Invite
+              </Button>
+
+            </Grid.Column>
+            <Grid.Column computer={1} textAlign="right">
+              <Button icon>
+                <Icon name='filter' />
+              </Button>
+            </Grid.Column>
+            
           </Grid.Row>
           <Grid.Row>
             <Table celled>
@@ -37,11 +50,13 @@ export default () => {
             </Table>
           </Grid.Row>
           <Grid.Row>
-            <Grid.Column>
+            <Grid.Column textAlign="right">
               <Pagination defaultActivePage={5} totalPages={10} />
             </Grid.Column>
           </Grid.Row>
         </Grid>
+        </Segment>
+        
       </Grid.Column>
     </Grid>
   )
