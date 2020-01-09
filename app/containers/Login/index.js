@@ -1,5 +1,5 @@
 import React from 'react'
-import {Button, Divider, Form, Grid, Segment, Header, Message, Image} from 'semantic-ui-react'
+import {Button, Form, Grid, Segment, Header, Message, Image} from 'semantic-ui-react'
 import logoImg from 'Assets/logo.jpg'
 
 const LoginForm = () => (
@@ -22,8 +22,7 @@ const LoginForm = () => (
               label='Password'
               type='password'
             />
-
-          <Button content='Login' primary />
+            <Button content='Login' primary />
           </Segment>
         </Form>
       </Grid.Column>
