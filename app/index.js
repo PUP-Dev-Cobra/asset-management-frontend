@@ -1,5 +1,4 @@
 import 'sanitize.css'
-import './styles/global.scss'
 import 'semantic-ui-css/semantic.css'
 
 import React, { Suspense } from 'react'
