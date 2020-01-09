@@ -31,6 +31,7 @@ module.exports = (env, options) => {
     resolve: {
       alias: {
         'react-dom': '@hot-loader/react-dom',
+        Assets: path.resolve(__dirname, '..',srcFolder, 'assets'),
         Components: path.resolve(__dirname, '..', srcFolder, 'components'),
         Containers: path.resolve(__dirname, '..', srcFolder, 'containers'),
         RootContainers: path.resolve(__dirname, '..', srcFolder, 'rootContainers'),
