@@ -1,5 +1,5 @@
 import React from 'react'
-import { Grid, Header, Segment,  Input, Table, Pagination, Label, Button, Icon} from 'semantic-ui-react'
+import { Grid, Segment,  Input, Table, Pagination, Label, Button, Icon} from 'semantic-ui-react'
 
 
 export default () => {
