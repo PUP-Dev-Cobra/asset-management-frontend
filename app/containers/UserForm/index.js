@@ -8,7 +8,8 @@ const countryOptions = [
   { key: 'ap', value: 'ap', text: 'Approver' }
 ]
 
-export default () => {
+export default props => {
+  const {history} = props
   return (
     <Grid centered verticalAlign='middle'>
       <Grid.Column computer={13}>
@@ -45,7 +46,7 @@ export default () => {
             </Form.Group>
             <Form.Group width='eqal'>
             <Form.Field>
-              <Button primary>Submit</Button>
+              <Button primary onClick={() => history.push('/user')} >Submit</Button>
             </Form.Field>
             <Form.Field>
               <Button primary>Disable</Button>
