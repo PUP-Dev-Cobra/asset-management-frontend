@@ -1,7 +1,8 @@
 import React from 'react'
 import {Grid, Form, Select, Segment, List, Button} from 'semantic-ui-react'
 
-export default () => {
+export default props => { 
+  const {history} = props
   return (
    <Grid centered style={{ height: '90vh'}}>
      <Grid.Column computer='14'>
@@ -80,8 +81,8 @@ export default () => {
               </Form.Field>
 
               <Form.Field>
-                <Button floated='right'> Save </Button>
-                <Button floated='right'> For Approval </Button>
+                <Button floated='right' primary onClick={() => history.push('/loan/list')}> Save </Button>
+                <Button floated='right' color='teal'> For Approval </Button>
               </Form.Field>
             </Form>
           </Grid.Column>

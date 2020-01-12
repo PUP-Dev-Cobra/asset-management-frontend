@@ -32,9 +32,16 @@ const DashboardRoot = props => {
   const { isExact } = match
 
   let redirect = null
-  if (match.path === '/member') {
-    redirect = '/member/create'
-  }
+    switch (match.path) {
+      case  '/member':
+        redirect = '/member/create'
+      break
+      case '/loan':
+        redirect ='/loan/create'
+      break
+      case '/user':
+        redirect = '/user/create'  
+    }
 
   let showButton = false
   switch (location.pathname) {
@@ -59,16 +66,16 @@ const DashboardRoot = props => {
           <Menu.Item onClick={() => history.push('/')}>
             <Image src={logoImg} avatar />
           </Menu.Item>
-          <Menu.Item link>
+          <Menu.Item active={match.path === '/member'} link onClick={() => history.push('/member/list')}>
             Member
           </Menu.Item>
-          <Menu.Item link>
+          <Menu.Item  active={match.path === '/loan'}link onClick={() => history.push('/loan/list')}>
             Loans
           </Menu.Item>
-          <Menu.Item link>
+          <Menu.Item active={match.path === '/ledger'} link onClick={() => history.push('/ledger')}>
             Ledger
           </Menu.Item>
-          <Menu.Item link>
+          <Menu.Item active={match.path === '/user'}link onClick={() => history.push('/user/list')}>
             User
           </Menu.Item>
           <Menu.Menu position='right'>

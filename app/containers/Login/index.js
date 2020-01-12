@@ -2,8 +2,12 @@ import React from 'react'
 import { Button, Form, Grid, Segment, Header, Image } from 'semantic-ui-react'
 import logoImg from 'Assets/logo.jpg'
 
-const LoginForm = () => (
-  <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle' relaxed='very' stackable>
+
+const LoginForm = props => {  
+const {history}= props
+ return (
+
+    <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle' relaxed='very' stackable>
     <Grid.Column style={{ maxWidth: 450 }}>
       <Header as='h2' color='teal' textAlign='center'>
         <Image src={logoImg} /> Login to your Account
@@ -22,11 +26,13 @@ const LoginForm = () => (
             label='Password'
             type='password'
           />
-          <Button content='Login' primary />
+          <Button primary onClick={() => history.push('/member/list')}> 
+              Login
+          </Button>
         </Segment>
       </Form>
     </Grid.Column>
-  </Grid>
-)
-
+    </Grid>
+  )
+}
 export default LoginForm
