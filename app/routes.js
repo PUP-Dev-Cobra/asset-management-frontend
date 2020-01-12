@@ -53,6 +53,10 @@ const routes = [
     routes: [
       ...loanRoutes
     ]
+  },
+  {
+    path: '/ledger',
+    component: LoadDashboardRoot
   }
 ]
 
