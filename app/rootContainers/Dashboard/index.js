@@ -25,21 +25,61 @@ const Content = styled.div`
   overflow-y: auto;
 `
 
-const DashboardRoot = ({ routes, match }) => {
+const DashboardRoot = props => {
+  console.log(props, 'props')
+
+  const { match, routes, history, location } = props
   const { isExact } = match
+
+  let redirect = null
+  if (match.path === '/member') {
+    redirect = '/member/create'
+  }
+
+  let showButton = false
+  switch (location.pathname) {
+    case '/member/list':
+      showButton = true
+      break
+    case '/user/list':
+      showButton = true
+      break
+    case '/loan/list':
+      showButton = true
+      break
+    default:
+      showButton = false
+      break
+  }
+
   return (
     <Containers>
       <MenuNavigation>
         <Menu size='large'>
-          <Menu.Item>
+          <Menu.Item onClick={() => history.push('/')}>
             <Image src={logoImg} avatar />
           </Menu.Item>
+          <Menu.Item link>
+            Member
+          </Menu.Item>
+          <Menu.Item link>
+            Loans
+          </Menu.Item>
+          <Menu.Item link>
+            Ledger
+          </Menu.Item>
+          <Menu.Item link>
+            User
+          </Menu.Item>
           <Menu.Menu position='right'>
-            <Menu.Item>
-              <Button primary>
-                Create
-              </Button>
-            </Menu.Item>
+            {
+              showButton &&
+                <Menu.Item>
+                  <Button primary onClick={() => history.push(redirect)}>
+                    Create
+                  </Button>
+                </Menu.Item>
+            }
             <Menu.Item>
               <Dropdown text='Profile' simple>
                 <Dropdown.Menu>

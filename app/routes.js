@@ -20,7 +20,7 @@ const routes = [
   },
   {
     path: '/member',
-    redirect: '/members/list',
+    redirect: '/member/list',
     exact: true
   },
   {
