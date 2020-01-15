@@ -11,7 +11,7 @@ export default () => {
 
              <Grid.Row style={{ paddingBottom: "1rem" }} >
                <Grid.Column computer={3}>
-                 <Input placeholder='Search...' />
+                 <Input icon='search' iconPosition='left' placeholder='search' />
                </Grid.Column>
               <Grid.Column computer={12} verticalAlign='middle'>
                 <Label as='a' tag>Filter 1</Label>

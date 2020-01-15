@@ -1,15 +1,17 @@
 import React from 'react'
-import {Grid, Form, Select, Segment, List, Button} from 'semantic-ui-react'
+import {Grid, Form, Select, Segment, List, Button, Header} from 'semantic-ui-react'
 
 export default props => { 
   const {history} = props
   return (
-   <Grid centered style={{ height: '90vh'}}>
-     <Grid.Column computer='14'>
+   <Grid centered style={{ height: '90vh'}} container padded='vertically'>
+     <Grid.Column computer='13'>
+       <Segment>
        <Grid>
         <Grid.Row>
           <Grid.Column>
-            <Form>
+            <Header as='h3'> Loan Form </Header>
+            <Form>     
               <Form.Field>
                 <label>Member</label>
                 <Select placeholder='Member' />
@@ -37,7 +39,7 @@ export default props => {
 
               <Form.Field>
                 <Grid centered>
-                  <Grid.Column computer='4'>
+                  <Grid.Column computer='3'>
                   <Segment>
                     <List divided verticalAlign='middle'>
                       <List.Item>
@@ -88,6 +90,7 @@ export default props => {
           </Grid.Column>
         </Grid.Row>
        </Grid>
+       </Segment>
      </Grid.Column>
    </Grid>
   )

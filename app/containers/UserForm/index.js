@@ -11,7 +11,7 @@ const countryOptions = [
 export default props => {
   const {history} = props
   return (
-    <Grid centered verticalAlign='middle'>
+    <Grid centered verticalAlign='middle' container padded ='vertically'>
       <Grid.Column computer={13}>
         <Segment>
           <Header as='h3'>User Form</Header>
