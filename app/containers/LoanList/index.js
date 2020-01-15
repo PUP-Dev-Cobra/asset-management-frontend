@@ -1,22 +1,28 @@
 import React from 'react'
-import {Table,Pagination,Grid,Search,Label} from 'semantic-ui-react'
+import {Table,Pagination,Grid,Input,Label,Segment,Button,Icon} from 'semantic-ui-react'
 export default () => {
   return (
-   <Grid centered style={{height: '90vh' }}>
-     <Grid.Column width='14' >
-       <Grid>
-         <Grid.Row>
-            <Grid.Column fluid computer='8'>
-              <Search />
+   <Grid centered style={{height: '90vh' }} verticalAlign='middle'>
+     <Grid.Column width='13' >
+       <Segment stacked>
+       <Grid textAlign='left'>
+         <Grid.Row style={{ paddingBottom: "1rem" }}>
+            <Grid.Column  computer='3'>
+            <Input icon='search' iconPosition='left' placeholder='search' />
             </Grid.Column>
-            <Grid.Column  computer='8'>
-              <Label as='a' tag> Filter 1 </Label>
-              <Label as='a' tag> Filter 2 </Label>
-              <Label as='a' tag> Filter 3 </Label>
+            <Grid.Column  computer='12' verticalAlign='middle'>
+              <Label as='a' tag> Filter 1</Label>
+              <Label as='a' tag> Filter 2</Label>
+              <Label as='a' tag> Filter 3</Label>
             </Grid.Column>
+            <Grid.Column computer={1} textAlign="right"> 
+                <Button icon>
+                  <Icon name='filter' />
+                </Button>
+              </Grid.Column>
          </Grid.Row>
          
-         <Grid.Column computer='15'>
+         <Grid.Column computer='16'>
             <Table celled>
               <Table.Header>
                 <Table.Row>
@@ -48,6 +54,7 @@ export default () => {
             </Table>
          </Grid.Column>
        </Grid>
+       </Segment>
      </Grid.Column>
    </Grid>
   )

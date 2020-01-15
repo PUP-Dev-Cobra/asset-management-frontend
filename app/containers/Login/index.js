@@ -7,7 +7,7 @@ const LoginForm = props => {
 const {history}= props
  return (
 
-    <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle' relaxed='very' stackable>
+    <Grid textAlign='center' style={{ height: '90vh' }} verticalAlign='middle' relaxed='very' stackable>
     <Grid.Column style={{ maxWidth: 450 }}>
       <Header as='h2' color='teal' textAlign='center'>
         <Image src={logoImg} /> Login to your Account
