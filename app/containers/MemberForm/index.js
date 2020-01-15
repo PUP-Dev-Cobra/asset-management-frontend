@@ -1,7 +1,18 @@
 import React from 'react'
-import { Grid, Segment, Header, Form, Table, Radio, Dropdown } from 'semantic-ui-react'
+import { Grid, Segment, Header, Form, Table, Radio, Dropdown,Select ,Button} from 'semantic-ui-react'
 
-export default () => {
+const TermsOfPayment = [
+  {key: 'F', value: 'F', text: 'Full payment'},
+  {key: 'I', value: 'I', text: 'Installment'},
+]
+
+const Terms = [
+  {key: 'M', value: 'M', text: 'Monthly'},
+  {key: 'S', value: 'S', text: 'Semi-Monthly'},
+  {key: 'B', value: 'B', text: 'Bi-Monthly'},
+]
+export default props => {
+  const {history} = props
   return (
     <Grid centered verticalAlign='middle' container padded='vertically'>
       <Grid.Column computer={13}>
@@ -121,7 +132,32 @@ export default () => {
                 </Table.Body>
               </Table>
             </Form.Field>
-          </Form>
+
+            <Form.Field>
+              <Header as='h1'>Share</Header>
+                <Segment>
+                  <label> Share </label>
+                  <input placeholder='share' input='number' />
+
+                  <label> Total Amount Share </label>
+                  <input placeholder='total amount share' input='number' />
+
+                  <label> Terms of Payment </label>
+                  <Select placeholder='terms of payment' options={TermsOfPayment} />
+
+                  <label> Terms </label>
+                  <Select placeholder='terms of payment' options={Terms} />
+                </Segment>
+            </Form.Field>
+
+            <Form.Field>
+              <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+              <Button onClick={() => history.push('/member')}>
+                Submit
+              </Button>
+              </div>
+            </Form.Field>
+          </Form> 
         </Segment>
       </Grid.Column>
     </Grid>
