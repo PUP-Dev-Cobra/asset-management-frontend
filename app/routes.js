@@ -7,10 +7,17 @@ const LoadLogin = lazy(() => import('Containers/Login' /* webpackChunkName: "Con
 
 const LoadDashboardRoot = lazy(() => import('RootContainers/Dashboard' /* webpackChunkName: "RootContainers-SampleRoot" */))
 
+const LoadForgotPassword = lazy(() => import('Containers/ForgotPassword' /* webpackChunkName: "Container-Forgot-Password" */))
+
 const routes = [
   {
     path: '/',
     component: LoadLogin,
+    exact: true
+  },
+  {
+    path: '/forgot-password',
+    component: LoadForgotPassword,
     exact: true
   },
   {
