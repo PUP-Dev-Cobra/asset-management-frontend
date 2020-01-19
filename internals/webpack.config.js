@@ -4,6 +4,7 @@ const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const autoPrefixer = require('autoprefixer')
+const DotEnvWebpack = require('dotenv-webpack')
 // const WorkboxWebpackPlugin = require('workbox-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 // const CopyWebpackPlugin = require('copy-webpack-plugin')
@@ -31,7 +32,8 @@ module.exports = (env, options) => {
     resolve: {
       alias: {
         'react-dom': '@hot-loader/react-dom',
-        Assets: path.resolve(__dirname, '..',srcFolder, 'assets'),
+        App: path.resolve(__dirname, '..', srcFolder),
+        Assets: path.resolve(__dirname, '..', srcFolder, 'assets'),
         Components: path.resolve(__dirname, '..', srcFolder, 'components'),
         Containers: path.resolve(__dirname, '..', srcFolder, 'containers'),
         RootContainers: path.resolve(__dirname, '..', srcFolder, 'rootContainers'),
@@ -39,6 +41,7 @@ module.exports = (env, options) => {
       }
     },
     plugins: [
+      new DotEnvWebpack(),
       new CleanWebpackPlugin(),
       // new CopyWebpackPlugin([
       //   './app/site.webmanifest',

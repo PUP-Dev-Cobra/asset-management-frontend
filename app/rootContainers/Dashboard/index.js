@@ -1,4 +1,4 @@
-import React, { lazy } from 'react'
+import React, { lazy, useEffect, useState } from 'react'
 import { Switch } from 'react-router-dom'
 import { Menu, Button, Image, Dropdown } from 'semantic-ui-react'
 import styled from 'styled-components'
@@ -26,22 +26,21 @@ const Content = styled.div`
 `
 
 const DashboardRoot = props => {
-  console.log(props, 'props')
-
+  const [userType, setUserType] = useState(null)
   const { match, routes, history, location } = props
   const { isExact } = match
 
   let redirect = null
-    switch (match.path) {
-      case  '/member':
-        redirect = '/member/create'
+  switch (match.path) {
+    case '/member':
+      redirect = '/member/create'
       break
-      case '/loan':
-        redirect ='/loan/create'
+    case '/loan':
+      redirect = '/loan/create'
       break
-      case '/user':
-        redirect = '/user/create'  
-    }
+    case '/user':
+      redirect = '/user/create'
+  }
 
   let showButton = false
   switch (location.pathname) {
@@ -59,6 +58,24 @@ const DashboardRoot = props => {
       break
   }
 
+  const logoutHandle = () => {
+    localStorage.clear()
+    history.push('/')
+  }
+
+  /**
+   * Check if there are tokens available. Redirect back to login if none
+   */
+  useEffect(() => {
+    const token = localStorage.getItem('jwt_token', null)
+    if (!token) {
+      history.push('/')
+    } else {
+      const userType = localStorage.getItem('user_type')
+      setUserType(userType)
+    }
+  }, [])
+
   return (
     <Containers>
       <MenuNavigation>
@@ -66,18 +83,30 @@ const DashboardRoot = props => {
           <Menu.Item onClick={() => history.push('/')}>
             <Image src={logoImg} avatar />
           </Menu.Item>
-          <Menu.Item active={match.path === '/member'} link onClick={() => history.push('/member/list')}>
-            Member
-          </Menu.Item>
-          <Menu.Item  active={match.path === '/loan'}link onClick={() => history.push('/loan/list')}>
-            Loans
-          </Menu.Item>
-          <Menu.Item active={match.path === '/ledger'} link onClick={() => history.push('/ledger')}>
-            Ledger
-          </Menu.Item>
-          <Menu.Item active={match.path === '/user'}link onClick={() => history.push('/user/list')}>
-            User
-          </Menu.Item>
+          {
+            (userType === 'teller' || userType === 'approver') &&
+              <Menu.Item active={match.path === '/member'} link onClick={() => history.push('/member/list')}>
+                Member
+              </Menu.Item>
+          }
+          {
+            (userType === 'teller' || userType === 'approver') &&
+              <Menu.Item active={match.path === '/loan'} link onClick={() => history.push('/loan/list')}>
+                Loans
+              </Menu.Item>
+          }
+          {
+            (userType === 'teller' || userType === 'approver') &&
+              <Menu.Item active={match.path === '/ledger'} link onClick={() => history.push('/ledger')}>
+              Ledger
+              </Menu.Item>
+          }
+          {
+            userType === 'admin' &&
+              <Menu.Item active={match.path === '/user'} link onClick={() => history.push('/user/list')}>
+                User
+              </Menu.Item>
+          }
           <Menu.Menu position='right'>
             {
               showButton &&
@@ -93,7 +122,7 @@ const DashboardRoot = props => {
                   <Dropdown.Item>
                     Account Profile
                   </Dropdown.Item>
-                  <Dropdown.Item>
+                  <Dropdown.Item onClick={logoutHandle}>
                     Logout
                   </Dropdown.Item>
                 </Dropdown.Menu>
