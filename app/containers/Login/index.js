@@ -32,16 +32,16 @@ const LoginForm = ({ history }) => {
       localStorage.setItem('user_type', user_type)
       switch (user_type) {
         case 'admin':
-          history.push('/user/list')
+          location.href = '/user/list'
           break
         case 'member':
-          history.push('/member/detail')
+          location.href = '/member/detail'
           break
         case 'approver':
-          history.push('/loan/list')
+          location.href = '/loan/list'
           break
         case 'teller':
-          history.push('/member/list')
+          location.href = 'member/list'
       }
     }
   }, [data])

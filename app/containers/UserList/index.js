@@ -9,13 +9,14 @@ import {
   Message,
   Table
 } from 'semantic-ui-react'
+import get from 'lodash/get'
 import { useAsync } from 'react-async'
 
 import { userListAsync } from './async'
 
 export default ({ history }) => {
   const { data, error, isPending, run } = useAsync({ deferFn: userListAsync })
-
+  const userList = get(data, 'response')
   useEffect(() => {
     run()
   }, [])
@@ -44,9 +45,9 @@ export default ({ history }) => {
                     <Select
                       placeholder='Field Type'
                       options={[
-                        { key: 'em', value: 'email', selected: true, text: 'Email' },
-                        { key: 'em', value: 'user_type', text: 'User Type' },
-                        { key: 'em', value: 'status', text: 'Status' }
+                        { key: 0, value: 'email', selected: true, text: 'Email' },
+                        { key: 1, value: 'user_type', text: 'User Type' },
+                        { key: 2, value: 'status', text: 'Status' }
                       ]}
                     />
                   </li>
@@ -78,9 +79,9 @@ export default ({ history }) => {
 
                   <Table.Body>
                     {
-                      data &&
-                      data.response.map(({ uuid, email, status, user_type }, i) => (
-                        <Table.Row key={i} onClick={() => history.push(`/user/${uuid}`)}>
+                      userList &&
+                      userList.map(({ uuid, email, status, user_type }, i) => (
+                        <Table.Row key={uuid} onClick={() => history.push(`/user/${uuid}`)}>
                           <Table.Cell>{email}</Table.Cell>
                           <Table.Cell>{user_type}</Table.Cell>
                           <Table.Cell positive={status === 'active'}>{status}</Table.Cell>

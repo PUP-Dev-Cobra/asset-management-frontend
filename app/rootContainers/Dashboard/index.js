@@ -119,10 +119,10 @@ const DashboardRoot = props => {
             <Menu.Item>
               <Dropdown text='Profile' simple>
                 <Dropdown.Menu>
-                  <Dropdown.Item>
+                  <Dropdown.Item key={0}>
                     Account Profile
                   </Dropdown.Item>
-                  <Dropdown.Item onClick={logoutHandle}>
+                  <Dropdown.Item onClick={logoutHandle} key={1}>
                     Logout
                   </Dropdown.Item>
                 </Dropdown.Menu>

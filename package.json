@@ -126,10 +126,12 @@
       "self": true,
       "fetch": true,
       "localStorage": true,
-      "atob": true
+      "atob": true,
+      "location": true
     },
     "rules": {
       "react/prop-types": 0,
+      "react/jsx-fragments": 0,
       "camelcase": [
         0,
         {
