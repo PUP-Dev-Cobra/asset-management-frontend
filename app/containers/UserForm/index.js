@@ -4,22 +4,11 @@ import { Form as ReactFinalForm, Field, FormSpy } from 'react-final-form'
 import { useAsync } from 'react-async'
 import get from 'lodash/get'
 
+import { InputField } from 'Components/InputFields'
 import { email, required, isMatchPassword } from 'App/validations'
 import { composeValidators } from 'App/utils'
 
 import { option, create, update, get as asyncGet } from './async'
-
-const InputField = ({ input, meta, ...rest }) => (
-  <Fragment>
-    <input {...input} {...rest} />
-    {
-      meta.error && meta.touched &&
-        <Message negative>
-          {meta.error}
-        </Message>
-    }
-  </Fragment>
-)
 
 export default ({ history, match }) => {
   const uuid = get(match, 'params.id')
