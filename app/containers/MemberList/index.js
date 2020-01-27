@@ -82,7 +82,7 @@ export default () => {
                           <Table.Cell>
                             {
                               `
-                                ${r.last_name}, ${r.first_name}, ${r.middle_name}
+                                ${r.last_name}, ${r.first_name}, ${(r.middle_name) ? r.middle_name : ''}
                               `
                             }
                           </Table.Cell>

@@ -21,3 +21,21 @@ export const option = async args => {
 
   return res.json()
 }
+
+export const create = async args => {
+  const res = await fetch(
+    `${API_URL}/member`,
+    {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(args[0])
+    }
+  )
+
+  if (res.status !== 200) {
+    const body = await res.json()
+    throw new Error(body.error).message
+  }
+
+  return res.json()
+}

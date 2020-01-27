@@ -3,7 +3,7 @@ import { Select, Grid, Button, Table, Input, Label, Statistic, Icon, Segment } f
 
 export default () => {
   return (
-    <Grid centered style={{ height: '90vh' }} verticalAlign='middle' padded='vertically'>
+    <Grid centered container verticalAlign='middle' padded='vertically'>
       <Grid.Column computer='13'>
         <Segment>
           <Grid textAlign='left'>

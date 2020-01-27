@@ -1,33 +1,63 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, Fragment } from 'react'
 import {
   Button,
   Form,
   Grid,
   Icon,
   Header,
+  Message,
   Segment,
-  Select,
   Table
 } from 'semantic-ui-react'
 import arrayMutators from 'final-form-arrays'
-import { Form as ReactFinalForm, Field } from 'react-final-form'
+import { Form as ReactFinalForm, FormSpy, Field } from 'react-final-form'
 import { FieldArray } from 'react-final-form-arrays'
 import { useAsync } from 'react-async'
 import get from 'lodash/get'
+import dayjs from 'dayjs'
+import createDecorator from 'final-form-calculate'
 
 import { required } from 'App/validations'
 import { InputField, SelectField } from 'Components/InputFields'
 
-import { option as optionAsync } from './async'
+import { option as optionAsync, create as createAsync } from './async'
 
-export default props => {
+const formCalculators = createDecorator(
+  {
+    field: 'dob',
+    updates: {
+      age: (val) => dayjs().diff(val, 'years')
+    }
+  },
+  {
+    field: 'share_count',
+    updates: {
+      total_share_amount: (val, allValues) => val * allValues.share_per_amount
+    }
+  }
+)
+
+export default ({ history }) => {
   const [forDeletion, setForDeletion] = useState([])
+  const [formStatus, setFormStatus] = useState(null)
+  const [addShare, setAddShare] = useState(false)
+
+  const createMemberSubmit = useAsync({
+    deferFn: createAsync
+  })
+
   const onSubmit = values => {
     const forSending = {
-      ...values,
+      memberForm: {
+        ...values,
+        status: formStatus
+      },
       forDeletion
     }
-    console.log(forSending)
+
+    createMemberSubmit.run(
+      forSending
+    )
   }
 
   const genderOptionsAsync = useAsync({
@@ -40,22 +70,47 @@ export default props => {
   })
   const civilStatusOptionsAsync = useAsync({
     promiseFn: optionAsync,
-    option_name: 'payment_term'
+    option_name: 'civil_status'
+  })
+  const sharePerAmountOptionAsync = useAsync({
+    promiseFn: optionAsync,
+    option_name: 'share_per_amount'
   })
 
   const genderOptions = get(genderOptionsAsync, 'data.response') || []
   const civilStatusOptions = get(civilStatusOptionsAsync, 'data.response') || []
   const sourceOfIncomeOptions = get(sourceOfIncomOptionsAsync, 'data.response') || []
+  const sharePerAmountOption = get(sharePerAmountOptionAsync, 'data.response') || [{ option_value: 0 }]
 
-  console.log(genderOptions, 'genderOptions')
+  useEffect(
+    () => {
+      if (createMemberSubmit.isFulfilled) {
+        history.push('/member/list')
+      }
+    },
+    [createMemberSubmit.isFulfilled]
+  )
 
   return (
     <Grid centered verticalAlign='middle' container padded='vertically'>
       <Grid.Column computer={13}>
         <Segment>
-          <Header as='h1'> Membership Form </Header>
+          <Header as='h1'>Membership Form</Header>
+          {
+            createMemberSubmit.error &&
+              <Message negative>
+                {
+                  createMemberSubmit.error
+                }
+              </Message>
+          }
           <ReactFinalForm
             onSubmit={onSubmit}
+            decorators={[formCalculators]}
+            initialValues={{
+              dob: dayjs().subtract(18, 'years').format('YYYY-MM-DD'),
+              share_per_amount: sharePerAmountOption[0].option_value
+            }}
             mutators={{
               ...arrayMutators
             }}
@@ -63,10 +118,13 @@ export default props => {
             {
               ({ form: { mutators: { push } }, handleSubmit }) => {
                 return (
-                  <Form onSubmit={handleSubmit}>
+                  <Form
+                    onSubmit={handleSubmit}
+                    loading={createMemberSubmit.isPending}
+                  >
                     <Form.Group widths='equal'>
                       <Form.Field>
-                        <label> First Name </label>
+                        <label>First Name</label>
                         <Field
                           name='first_name'
                           placeholder='First Name'
@@ -75,7 +133,7 @@ export default props => {
                         />
                       </Form.Field>
                       <Form.Field>
-                        <label>Middle Name </label>
+                        <label>Middle Name</label>
                         <Field
                           name='middle_name'
                           placeholder='Middle Name'
@@ -102,7 +160,7 @@ export default props => {
                     </Form.Group>
                     <Form.Group widths='equal'>
                       <Form.Field>
-                        <label> Date of Birth</label>
+                        <label>Date of Birth</label>
                         <Field
                           name='dob'
                           placeholder='Date of Birth'
@@ -164,15 +222,27 @@ export default props => {
                             }))}
                         />
                       </Form.Field>
-                      <Form.Field>
-                        <label>Spouse's Name</label>
-                        <Field
-                          name='spouse_name'
-                          placeholder='Spouse Name'
-                          component={InputField}
-                          validate={required}
-                        />
-                      </Form.Field>
+                      <FormSpy
+                        subscription={{ values: true }}
+                      >
+                        {
+                          ({ values: { civil_status } }) => (
+                            <Form.Field>
+                              <label>Spouse's Name</label>
+                              {
+                                civil_status === 'married' &&
+                                  <Field
+                                    name='spouse_name'
+                                    disabled={(civil_status !== 'married')}
+                                    placeholder='Spouse Name'
+                                    component={InputField}
+                                    validate={required}
+                                  />
+                              }
+                            </Form.Field>
+                          )
+                        }
+                      </FormSpy>
                     </Form.Group>
                     <Form.Group widths='equal'>
                       <Form.Field>
@@ -180,6 +250,15 @@ export default props => {
                         <Field
                           name='address'
                           placeholder='Address'
+                          component={InputField}
+                          validate={required}
+                        />
+                      </Form.Field>
+                      <Form.Field>
+                        <label>Contact-No</label>
+                        <Field
+                          name='contact_no'
+                          placeholder='Contact No'
                           component={InputField}
                           validate={required}
                         />
@@ -207,7 +286,7 @@ export default props => {
                       <Form.Field>
                         <label>Monthly Income</label>
                         <Field
-                          name='civil_status'
+                          name='monthly_income'
                           component={SelectField}
                           validate={required}
                           loading={sourceOfIncomOptionsAsync.isPending}
@@ -238,10 +317,20 @@ export default props => {
                                   <Table.Row key={index}>
                                     <Table.Cell>
                                       <Field
-                                        name={`${name}.name`}
-                                        placeholder='Beneficiary'
+                                        name={`${name}.first_name`}
+                                        placeholder='First Name'
                                         component={InputField}
                                         validate={required}
+                                      />
+                                      <Field
+                                        name={`${name}.middle_name`}
+                                        placeholder='Middle Name'
+                                        component={InputField}
+                                      />
+                                      <Field
+                                        name={`${name}.last_name`}
+                                        placeholder='Middle Name'
+                                        component={InputField}
                                       />
                                     </Table.Cell>
                                     <Table.Cell>
@@ -307,37 +396,57 @@ export default props => {
                     </Form.Field>
 
                     <Form.Group widths='equal'>
-                      <Form.Field>
-                        <Header as='h1'>Share</Header>
-                        <Segment>
-                          <Form.Group widths='equal'>
-                            <Form.Field>
-                              <label>Share</label>
-                              <input placeholder='share' input='number' />
-                            </Form.Field>
-                            <Form.Field>
-                              <label>Total Amount Share</label>
-                              <input placeholder='share' input='number' />
-                            </Form.Field>
-                          </Form.Group>
-                          <Form.Group widths='equal'>
-                            <Form.Field>
-                              <label>Term of Payment</label>
-                              <Select
-                                placeholder='terms of payment'
-                                options={[]}
-                              />
-                            </Form.Field>
-                            <Form.Field>
-                              <label>Terms</label>
-                              <Select
-                                placeholder='terms of payment'
-                                options={[]}
-                              />
-                            </Form.Field>
-                          </Form.Group>
-                        </Segment>
-                      </Form.Field>
+                      {
+                        !addShare &&
+                          <Form.Field>
+                            <Segment placeholder>
+                              <Button
+                                type='button'
+                                onClick={() => setAddShare(!addShare)}
+                              >
+                                Add Share
+                              </Button>
+                            </Segment>
+                          </Form.Field>
+                      }
+                      {
+                        addShare &&
+                          <Form.Field>
+                            <Header as='h1'>Share</Header>
+                            <Segment>
+                              <Form.Group widths='equal'>
+                                <Form.Field>
+                                  <label>Share Purchase</label>
+                                  <Field
+                                    name='share_count'
+                                    placeholder='Beneficiary'
+                                    component={InputField}
+                                    validate={required}
+                                  />
+                                </Form.Field>
+                                <Form.Field>
+                                  <label>Share Per Amount</label>
+                                  <Field
+                                    name='share_per_amount'
+                                    readOnly
+                                    placeholder='Beneficiary'
+                                    component={InputField}
+                                    validate={required}
+                                  />
+                                </Form.Field>
+                                <Form.Field>
+                                  <label>Total Amount</label>
+                                  <Field
+                                    name='total_share_amount'
+                                    readOnly
+                                    placeholder='Beneficiary'
+                                    component={InputField}
+                                  />
+                                </Form.Field>
+                              </Form.Group>
+                            </Segment>
+                          </Form.Field>
+                      }
                     </Form.Group>
 
                     <Form.Field>
@@ -346,9 +455,29 @@ export default props => {
                         justifyContent: 'flex-end'
                       }}
                       >
-                        <Button type='submit' primary>
-                          Submit
-                        </Button>
+                        <FormSpy>
+                          {
+                            ({ pristine, invalid }) => (
+                              <Fragment>
+                                <Button
+                                  type='submit'
+                                  onClick={() => setFormStatus('draft')}
+                                  disabled={(pristine || invalid)}
+                                >
+                                  Submit For Draft
+                                </Button>
+                                <Button
+                                  type='submit'
+                                  primary
+                                  onClick={() => setFormStatus('pending')}
+                                  disabled={(pristine || invalid)}
+                                >
+                                  Submit For Approval
+                                </Button>
+                              </Fragment>
+                            )
+                          }
+                        </FormSpy>
                       </div>
                     </Form.Field>
                   </Form>
