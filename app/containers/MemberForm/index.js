@@ -20,7 +20,12 @@ import createDecorator from 'final-form-calculate'
 import { required } from 'App/validations'
 import { InputField, SelectField } from 'Components/InputFields'
 
-import { option as optionAsync, create as createAsync } from './async'
+import {
+  option as optionAsync,
+  create as createAsync,
+  update as updateAsync,
+  fetchMember
+} from './async'
 
 const formCalculators = createDecorator(
   {
@@ -30,17 +35,28 @@ const formCalculators = createDecorator(
     }
   },
   {
-    field: 'share_count',
+    field: 'share.share_count',
     updates: {
-      total_share_amount: (val, allValues) => val * allValues.share_per_amount
+      'share.total_share_amount': (v, aV) => parseInt(v * aV.share.share_per_amount)
     }
   }
 )
 
-export default ({ history }) => {
+export default ({ history, match }) => {
+  const uuid = get(match, 'params.id')
+  let fetchAsync = {}
+  let onSubmitAsync = useAsync({
+    deferFn: createAsync
+  })
+  const [initalValues, setInitialValues] = useState(null)
   const [forDeletion, setForDeletion] = useState([])
   const [formStatus, setFormStatus] = useState(null)
   const [addShare, setAddShare] = useState(false)
+
+  if (uuid) {
+    fetchAsync = useAsync({ promiseFn: fetchMember, uuid })
+    onSubmitAsync = useAsync({ deferFn: updateAsync, uuid })
+  }
 
   const createMemberSubmit = useAsync({
     deferFn: createAsync
@@ -52,10 +68,11 @@ export default ({ history }) => {
         ...values,
         status: formStatus
       },
+      uuid,
       forDeletion
     }
 
-    createMemberSubmit.run(
+    onSubmitAsync.run(
       forSending
     )
   }
@@ -77,18 +94,56 @@ export default ({ history }) => {
     option_name: 'share_per_amount'
   })
 
-  const genderOptions = get(genderOptionsAsync, 'data.response') || []
-  const civilStatusOptions = get(civilStatusOptionsAsync, 'data.response') || []
-  const sourceOfIncomeOptions = get(sourceOfIncomOptionsAsync, 'data.response') || []
-  const sharePerAmountOption = get(sharePerAmountOptionAsync, 'data.response') || [{ option_value: 0 }]
+  const genderOptions = get(
+    genderOptionsAsync,
+    'data.response') || []
+  const civilStatusOptions = get(
+    civilStatusOptionsAsync,
+    'data.response') || []
+  const sourceOfIncomeOptions = get(
+    sourceOfIncomOptionsAsync,
+    'data.response') || []
+  const sharePerAmountOption = get(
+    sharePerAmountOptionAsync,
+    'data.response') || [{ option_value: 0 }]
 
   useEffect(
     () => {
-      if (createMemberSubmit.isFulfilled) {
+      if (onSubmitAsync.isFulfilled) {
         history.push('/member/list')
       }
     },
-    [createMemberSubmit.isFulfilled]
+    [onSubmitAsync.isFulfilled]
+  )
+
+  useEffect(
+    () => {
+      if (fetchAsync.data) {
+        const fetchedData = { ...fetchAsync.data }
+        fetchedData.share = fetchAsync.data.shares[0]
+        delete fetchAsync.data.shares
+        if (fetchedData.share) {
+          setAddShare(true)
+        }
+        setInitialValues({ ...fetchedData })
+      }
+    },
+    [fetchAsync.data]
+  )
+
+  useEffect(
+    () => {
+      if (!uuid) {
+        setInitialValues({
+          dob: dayjs().subtract(18, 'years').format('YYYY-MM-DD'),
+          beneficiaries: [],
+          share: {
+            share_per_amount: sharePerAmountOption[0].option_value
+          }
+        })
+      }
+    },
+    [sharePerAmountOptionAsync.data]
   )
 
   return (
@@ -107,10 +162,7 @@ export default ({ history }) => {
           <ReactFinalForm
             onSubmit={onSubmit}
             decorators={[formCalculators]}
-            initialValues={{
-              dob: dayjs().subtract(18, 'years').format('YYYY-MM-DD'),
-              share_per_amount: sharePerAmountOption[0].option_value
-            }}
+            initialValues={initalValues}
             mutators={{
               ...arrayMutators
             }}
@@ -120,7 +172,10 @@ export default ({ history }) => {
                 return (
                   <Form
                     onSubmit={handleSubmit}
-                    loading={createMemberSubmit.isPending}
+                    loading={
+                      onSubmitAsync.isPending ||
+                      fetchAsync.isPending
+                    }
                   >
                     <Form.Group widths='equal'>
                       <Form.Field>
@@ -418,26 +473,26 @@ export default ({ history }) => {
                                 <Form.Field>
                                   <label>Share Purchase</label>
                                   <Field
-                                    name='share_count'
+                                    name='share.share_count'
                                     placeholder='Beneficiary'
                                     component={InputField}
+                                    type='number'
                                     validate={required}
                                   />
                                 </Form.Field>
                                 <Form.Field>
                                   <label>Share Per Amount</label>
                                   <Field
-                                    name='share_per_amount'
+                                    name='share.share_per_amount'
                                     readOnly
                                     placeholder='Beneficiary'
                                     component={InputField}
-                                    validate={required}
                                   />
                                 </Form.Field>
                                 <Form.Field>
                                   <label>Total Amount</label>
                                   <Field
-                                    name='total_share_amount'
+                                    name='share.total_share_amount'
                                     readOnly
                                     placeholder='Beneficiary'
                                     component={InputField}

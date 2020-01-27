@@ -15,7 +15,7 @@ import dayjs from 'dayjs'
 
 import { memberListAsync } from './async'
 
-export default () => {
+export default ({ history }) => {
   const { data, error, isPending } = useAsync({ promiseFn: memberListAsync })
   const memberList = get(data, 'response') || []
 
@@ -65,7 +65,7 @@ export default () => {
             }
             <Grid.Row>
               <Grid.Column>
-                <Table celled>
+                <Table celled selectable>
                   <Table.Header>
                     <Table.Row>
                       <Table.HeaderCell>Member Name</Table.HeaderCell>
@@ -78,7 +78,10 @@ export default () => {
                   <Table.Body>
                     {
                       memberList.map((r, i) => (
-                        <Table.Row key={i}>
+                        <Table.Row
+                          key={r.uuid}
+                          onClick={() => history.push(`/member/${r.uuid}`)}
+                        >
                           <Table.Cell>
                             {
                               `

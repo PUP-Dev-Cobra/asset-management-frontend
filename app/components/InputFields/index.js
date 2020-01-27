@@ -18,10 +18,12 @@ export const SelectField = ({ input, meta, ...rest }) => (
     <Form.Select
       {...input}
       onChange={
-        (e, { value }) => input.onChange(value)
+        (e, { value }) => {
+          if (rest.onChangeCb) rest.onChangeCb(value)
+          return input.onChange(value)
+        }
       }
       control={Select}
-      placeholder='Gender'
       value={input.value}
       {...rest}
     />

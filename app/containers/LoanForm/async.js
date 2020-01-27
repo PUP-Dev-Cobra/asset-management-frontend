@@ -22,13 +22,12 @@ export const option = async args => {
   return res.json()
 }
 
-export const create = async args => {
+export const memberList = async args => {
   const res = await fetch(
-    `${API_URL}/member`,
+    `${API_URL}/loan/members`,
     {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(args[0])
+      method: 'GET',
+      headers
     }
   )
 
@@ -40,27 +39,10 @@ export const create = async args => {
   return res.json()
 }
 
-export const update = async args => {
+export const fetchMemberShares = async args => {
+  const query = qs.stringify({ uuid: args[0].uuid })
   const res = await fetch(
-    `${API_URL}/member/${args[0].uuid}`,
-    {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify(args[0])
-    }
-  )
-
-  if (res.status !== 200) {
-    const body = await res.json()
-    throw new Error(body.error).message
-  }
-
-  return res.json()
-}
-
-export const fetchMember = async args => {
-  const res = await fetch(
-    `${API_URL}/member/${args.uuid}`,
+    `${API_URL}/loan/member/share?${query}`,
     {
       method: 'GET',
       headers
