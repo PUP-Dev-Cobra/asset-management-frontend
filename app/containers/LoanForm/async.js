@@ -2,6 +2,7 @@ import { API_URL } from 'App/constants'
 import qs from 'query-string'
 
 import { headers } from 'App/utils'
+import { responseHandling } from 'App/async'
 
 export const create = async args => {
   const res = await fetch(
@@ -13,31 +14,7 @@ export const create = async args => {
     }
   )
 
-  if (res.status !== 200) {
-    const body = await res.json()
-    throw new Error(body.error).message
-  }
-
-  return res.json()
-}
-
-export const option = async args => {
-  const query = qs.stringify({ option_name: args.option_name })
-
-  const res = await fetch(
-    `${API_URL}/options?${query}`,
-    {
-      method: 'GET',
-      headers
-    }
-  )
-
-  if (res.status !== 200) {
-    const body = await res.json()
-    throw new Error(body.error).message
-  }
-
-  return res.json()
+  return responseHandling(res)
 }
 
 export const memberList = async args => {
@@ -49,12 +26,7 @@ export const memberList = async args => {
     }
   )
 
-  if (res.status !== 200) {
-    const body = await res.json()
-    throw new Error(body.error).message
-  }
-
-  return res.json()
+  return responseHandling(res)
 }
 
 export const fetchMemberShares = async args => {
@@ -67,10 +39,17 @@ export const fetchMemberShares = async args => {
     }
   )
 
-  if (res.status !== 200) {
-    const body = await res.json()
-    throw new Error(body.error).message
-  }
+  return responseHandling(res)
+}
 
-  return res.json()
+export const fetchLoanInfo = async args => {
+  const res = await fetch(
+    `${API_URL}/loan/${args.uuid}`,
+    {
+      method: 'GET',
+      headers
+    }
+  )
+
+  return responseHandling(res)
 }

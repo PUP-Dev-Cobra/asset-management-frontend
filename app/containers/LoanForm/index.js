@@ -10,9 +10,10 @@ import { Form as ReactFinalForm, Field, FormSpy } from 'react-final-form'
 import { useAsync } from 'react-async'
 import get from 'lodash/get'
 
-import { composeValidators } from 'App/utils'
+import { composeValidators, useFetchAsyncOptions } from 'App/utils'
 import { InputField, SelectField } from 'Components/InputFields'
 import { required } from 'App/validations'
+import { options as optionAsync } from 'App/async'
 
 import Context from './context'
 import Computation from './sections/Computations'
@@ -20,25 +21,12 @@ import ShareRow from './sections/ShareRow'
 import {
   create as createAsync,
   fetchMemberShares,
-  memberList,
-  option as optionAsync
+  fetchLoanInfo,
+  memberList
 } from './async'
 import { loanAllowed } from './validations'
 
 const roundNumbers = val => parseFloat((Math.round(val * 100) / 100).toFixed(2)).toLocaleString()
-
-const useFetchOptions = (asyncCall, setState) => {
-  return useEffect(() => {
-    if (asyncCall.isResolved) {
-      setState(
-        get(
-          asyncCall,
-          'data.response[0].option_value'
-        )
-      )
-    }
-  }, [asyncCall.isResolved])
-}
 
 const useGenerateSelction = (asyncCall, setState) => {
   return useEffect(() => {
@@ -72,7 +60,10 @@ const useOptionAsync = (optionName) => {
   })
 }
 
-export default ({ history }) => {
+export default ({ history, match }) => {
+  const uuid = get(match, 'params.id')
+
+  const [initialValues, setInitialValues] = useState({})
   const [memberSelection, setMemberSelection] = useState([])
   const [paymentTermSelection, setPaymentTermSelection] = useState([])
 
@@ -92,10 +83,43 @@ export default ({ history }) => {
   const memberListAsync = useAsync({ promiseFn: memberList })
 
   const paymentTermAsync = useOptionAsync('payment_term')
-  const capitalBuildUpAsync = useOptionAsync('captial_build_up')
-  const interestAsync = useOptionAsync('loan_interest')
-  const serviceChargeAsync = useOptionAsync('service_charge')
-  const shareAmountOptionAsync = useOptionAsync('share_per_amount')
+
+  if (uuid) {
+    const fetchMemberAsync = useAsync({ promiseFn: fetchLoanInfo, uuid })
+    useEffect(() => {
+      useFetchAsyncOptions('share_per_amount', setShareAmount)
+      if (fetchMemberAsync.isResolved) {
+        const {
+          capital_build_up,
+          interest,
+          service_charge,
+          member,
+          loan_amount,
+          payment_term,
+          loan_payment_start_date
+        } = get(fetchMemberAsync, 'data.response')
+
+        setCapitalBuildCharge(capital_build_up)
+        setInterestCharge(interest)
+        setServiceCharge(service_charge)
+
+        fetchMemberSharesAsync.run({ uuid: member.uuid })
+        setInitialValues({
+          member_id: member.uuid,
+          loan_amount,
+          payment_term: payment_term.toString(),
+          loan_payment_start_date
+        })
+      }
+    }, [fetchMemberAsync.isResolved])
+  } else {
+    useEffect(() => {
+      useFetchAsyncOptions('captial_build_up', setCapitalBuildCharge)
+      useFetchAsyncOptions('loan_interest', setInterestCharge)
+      useFetchAsyncOptions('service_charge', setServiceCharge)
+      useFetchAsyncOptions('share_per_amount', setShareAmount)
+    }, [])
+  }
 
   const formAsync = useAsync({ deferFn: createAsync })
 
@@ -135,11 +159,6 @@ export default ({ history }) => {
   }, [memberListAsync.isResolved])
 
   useGenerateSelction(paymentTermAsync, setPaymentTermSelection)
-
-  useFetchOptions(capitalBuildUpAsync, setCapitalBuildCharge)
-  useFetchOptions(interestAsync, setInterestCharge)
-  useFetchOptions(serviceChargeAsync, setServiceCharge)
-  useFetchOptions(shareAmountOptionAsync, setShareAmount)
 
   useCalculateShares(
     fetchMemberSharesAsync,
@@ -192,7 +211,10 @@ export default ({ history }) => {
       <Grid centered padded='vertically' container>
         <Grid.Column computer='13'>
           <Segment>
-            <ReactFinalForm onSubmit={onSubmitHandle}>
+            <ReactFinalForm
+              onSubmit={onSubmitHandle}
+              initialValues={initialValues}
+            >
               {
                 ({ form, handleSubmit }) => {
                   const member = get(
