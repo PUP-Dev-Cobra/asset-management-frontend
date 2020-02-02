@@ -1,10 +1,10 @@
 import React, { useState, useEffect, Fragment } from 'react'
 import {
-  Grid,
-  Form,
-  Segment,
   Button,
-  Header
+  Form,
+  Grid,
+  Header,
+  Segment
 } from 'semantic-ui-react'
 import { Form as ReactFinalForm, Field, FormSpy } from 'react-final-form'
 import { useAsync } from 'react-async'
@@ -18,10 +18,12 @@ import { options as optionAsync } from 'App/async'
 import Context from './context'
 import Computation from './sections/Computations'
 import ShareRow from './sections/ShareRow'
+import ActionnRow from './sections/ActionRow'
 import {
   create as createAsync,
-  fetchMemberShares,
+  update as updateAsync,
   fetchLoanInfo,
+  fetchMemberShares,
   memberList
 } from './async'
 import { loanAllowed } from './validations'
@@ -45,7 +47,7 @@ const useGenerateSelction = (asyncCall, setState) => {
 const useCalculateShares = (asyncCall, setState, shareAmount) => {
   return useEffect(() => {
     if (asyncCall.isResolved) {
-      const shares = get(asyncCall, 'data.response.shares')
+      const shares = asyncCall?.data?.response?.shares ?? []
       setState(
         shares.map(r => r.share_count).reduce((a, v) => a + v, 0) * shareAmount
       )
@@ -64,6 +66,7 @@ export default ({ history, match }) => {
   const uuid = get(match, 'params.id')
 
   const [initialValues, setInitialValues] = useState({})
+  const [disbursmentValues, setDisbursmentValues] = useState({})
   const [memberSelection, setMemberSelection] = useState([])
   const [paymentTermSelection, setPaymentTermSelection] = useState([])
 
@@ -83,33 +86,51 @@ export default ({ history, match }) => {
   const memberListAsync = useAsync({ promiseFn: memberList })
 
   const paymentTermAsync = useOptionAsync('payment_term')
+  let fetchMemberAsync = {}
 
   if (uuid) {
-    const fetchMemberAsync = useAsync({ promiseFn: fetchLoanInfo, uuid })
+    fetchMemberAsync = useAsync({ promiseFn: fetchLoanInfo, uuid })
     useEffect(() => {
       useFetchAsyncOptions('share_per_amount', setShareAmount)
       if (fetchMemberAsync.isResolved) {
+        let formValues = {}
         const {
           capital_build_up,
+          co_maker_1,
+          co_maker_2,
+          disbursment,
           interest,
-          service_charge,
-          member,
           loan_amount,
+          loan_payment_start_date,
+          member,
           payment_term,
-          loan_payment_start_date
-        } = get(fetchMemberAsync, 'data.response')
+          service_charge
+        } = fetchMemberAsync?.data?.response
 
         setCapitalBuildCharge(capital_build_up)
         setInterestCharge(interest)
         setServiceCharge(service_charge)
 
         fetchMemberSharesAsync.run({ uuid: member.uuid })
-        setInitialValues({
+        setDisbursmentValues({ ...disbursment })
+        formValues = {
           member_id: member.uuid,
           loan_amount,
           payment_term: payment_term.toString(),
           loan_payment_start_date
-        })
+        }
+
+        if (co_maker_1) {
+          coMaker1SharesAsync.run({ uuid: co_maker_1.uuid })
+          formValues.co_maker_1_id = co_maker_1.uuid
+        }
+
+        if (co_maker_2) {
+          coMaker2SharesAsync.run({ uuid: co_maker_2.uuid })
+          formValues.co_maker_2_id = co_maker_2.uuid
+        }
+
+        setInitialValues(formValues)
       }
     }, [fetchMemberAsync.isResolved])
   } else {
@@ -121,7 +142,9 @@ export default ({ history, match }) => {
     }, [])
   }
 
-  const formAsync = useAsync({ deferFn: createAsync })
+  const formAsync = uuid
+    ? useAsync({ deferFn: updateAsync, uuid })
+    : useAsync({ deferFn: createAsync })
 
   const onSubmitHandle = values => {
     const newValues = {
@@ -131,6 +154,10 @@ export default ({ history, match }) => {
       capital_build_up: capitalBuildCharge,
       share_amount: shareAmount,
       status: 'draft'
+    }
+
+    if (uuid) {
+      newValues.uuid = uuid
     }
     formAsync.run(newValues)
   }
@@ -153,7 +180,7 @@ export default ({ history, match }) => {
         {
           key: r.uuid,
           value: r.uuid,
-          text: `${r.last_name}, ${r.first_name} ${r.middle_name || ''}`
+          text: `${r.last_name}, ${r.first_name} ${r.middle_name ?? ''}`
         })))
     }
   }, [memberListAsync.isResolved])
@@ -172,7 +199,7 @@ export default ({ history, match }) => {
   )
   useCalculateShares(
     coMaker2SharesAsync,
-    setCoMaker1ShareValue,
+    setCoMaker2ShareValue,
     shareAmount
   )
 
@@ -201,198 +228,209 @@ export default ({ history, match }) => {
         capitalBuildCharge,
         coMaker1ShareValue,
         coMaker2ShareValue,
+        disbursmentValues,
         interestCharge,
         memberShareValue,
         roundNumbers,
         serviceCharge,
-        totalLoanableShares
+        totalLoanableShares,
+        uuid
       }}
     >
       <Grid centered padded='vertically' container>
-        <Grid.Column computer='13'>
-          <Segment>
-            <ReactFinalForm
-              onSubmit={onSubmitHandle}
-              initialValues={initialValues}
-            >
-              {
-                ({ form, handleSubmit }) => {
-                  const member = get(
-                    form.getFieldState('member_id'), 'value')
-                  const coMaker1 = get(
-                    form.getFieldState('co_maker_1_id'), 'value')
-                  const coMaker2 = get(
-                    form.getFieldState('co_maker_2_id'), 'value')
-                  return (
-                    <Form onSubmit={handleSubmit} loading={formAsync.isPending}>
-                      <Grid>
-                        <Grid.Row>
-                          <Grid.Column computer={10}>
-                            <Header as='h3'>Create Form</Header>
-                            <Form.Field>
-                              <label>Member</label>
-                              <Field
-                                component={SelectField}
-                                loading={memberListAsync.isPending}
-                                name='member_id'
-                                onChangeCb={onChangeLoanMember}
-                                placeholder='Member'
-                                options={
-                                  memberSelection
-                                    .filter(v => {
-                                      if (!coMaker1) return true
-                                      return coMaker1 !== v.value
-                                    })
-                                    .filter(v => {
-                                      if (!coMaker2) return true
-                                      return coMaker2 !== v.value
-                                    })
-                                }
-                              />
-                            </Form.Field>
+        {
+          uuid &&
+            <ActionnRow />
+        }
+        <Grid.Row>
+          <Grid.Column computer='13'>
+            <Segment>
+              <ReactFinalForm
+                onSubmit={onSubmitHandle}
+                initialValues={initialValues}
+              >
+                {
+                  ({ form, handleSubmit }) => {
+                    const member = form.getFieldState('member_id')?.value
+                    const coMaker1 = form.getFieldState('co_maker_1_id')?.value
+                    const coMaker2 = form.getFieldState('co_maker_2_id')?.value
+                    return (
+                      <Form
+                        onSubmit={handleSubmit}
+                        loading={
+                          formAsync.isPending || fetchMemberAsync?.isPending
+                        }
+                      >
+                        <Grid>
+                          <Grid.Row>
+                            <Grid.Column computer={10}>
+                              <Header as='h3'>Create Form</Header>
+                              <Form.Field>
+                                <label>Member</label>
+                                <Field
+                                  component={SelectField}
+                                  loading={memberListAsync.isPending}
+                                  name='member_id'
+                                  onChangeCb={onChangeLoanMember}
+                                  placeholder='Member'
+                                  options={
+                                    memberSelection
+                                      .filter(v => {
+                                        if (!coMaker1) return true
+                                        return coMaker1 !== v.value
+                                      })
+                                      .filter(v => {
+                                        if (!coMaker2) return true
+                                        return coMaker2 !== v.value
+                                      })
+                                  }
+                                />
+                              </Form.Field>
 
-                            <FormSpy subscription={{ values: true }}>
-                              {
-                                ({ values }) => (
-                                  <Fragment>
-                                    <Form.Field
-                                      disabled={!values.member_id}
-                                    >
-                                      <label>Co-Maker 1</label>
-                                      <Field
-                                        name='co_maker_1_id'
-                                        placeholder='Co Maker 1'
-                                        component={SelectField}
-                                        onChangeCb={onChangeLoanCoMaker1}
-                                        loading={memberListAsync.isPending}
-                                        options={
-                                          memberSelection
-                                            .filter(v => {
-                                              if (!member) return true
-                                              return member !== v.value
-                                            })
-                                            .filter(v => {
-                                              if (!coMaker2) return true
-                                              return coMaker2 !== v.value
-                                            })
-                                        }
-                                      />
-                                    </Form.Field>
-
-                                    <Form.Field
-                                      disabled={!values.co_maker_1_id}
-                                    >
-                                      <label>Co-Maker 2</label>
-                                      <Field
-                                        name='co_maker_2_id'
-                                        placeholder='Co Maker 2'
-                                        component={SelectField}
-                                        onChangeCb={onChangeLoanCoMaker2}
-                                        loading={memberListAsync.isPending}
-                                        options={
-                                          memberSelection
-                                            .filter(v => {
-                                              if (!coMaker1) return true
-                                              return coMaker1 !== v.value
-                                            })
-                                            .filter(v => {
-                                              if (!member) return true
-                                              return member !== v.value
-                                            })
-                                        }
-                                      />
-                                    </Form.Field>
-
-                                    <Form.Field disabled={!values.member_id}>
-                                      <label>Loan Amount</label>
-                                      <Field
-                                        component={InputField}
-                                        name='loan_amount'
-                                        placeholder='Loan Amount'
-                                        validate={
-                                          composeValidators(loanAllowed(totalLoanableShares))
-                                        }
-                                      />
-                                    </Form.Field>
-
-                                    <Form.Group widths='equal'>
-                                      <Form.Field disabled={!values.member_id}>
-                                        <label>Payment Term</label>
+                              <FormSpy subscription={{ values: true }}>
+                                {
+                                  ({ values }) => (
+                                    <Fragment>
+                                      <Form.Field
+                                        disabled={!values.member_id}
+                                      >
+                                        <label>Co-Maker 1</label>
                                         <Field
+                                          name='co_maker_1_id'
+                                          placeholder='Co Maker 1'
                                           component={SelectField}
-                                          options={paymentTermSelection}
-                                          name='payment_term'
-                                          placeholder='payment_term'
-                                          validate={required}
+                                          onChangeCb={onChangeLoanCoMaker1}
+                                          loading={memberListAsync.isPending}
+                                          options={
+                                            memberSelection
+                                              .filter(v => {
+                                                if (!member) return true
+                                                return member !== v.value
+                                              })
+                                              .filter(v => {
+                                                if (!coMaker2) return true
+                                                return coMaker2 !== v.value
+                                              })
+                                          }
+                                        />
+                                      </Form.Field>
+
+                                      <Form.Field
+                                        disabled={!values.co_maker_1_id}
+                                      >
+                                        <label>Co-Maker 2</label>
+                                        <Field
+                                          name='co_maker_2_id'
+                                          placeholder='Co Maker 2'
+                                          component={SelectField}
+                                          onChangeCb={onChangeLoanCoMaker2}
+                                          loading={memberListAsync.isPending}
+                                          options={
+                                            memberSelection
+                                              .filter(v => {
+                                                if (!coMaker1) return true
+                                                return coMaker1 !== v.value
+                                              })
+                                              .filter(v => {
+                                                if (!member) return true
+                                                return member !== v.value
+                                              })
+                                          }
                                         />
                                       </Form.Field>
 
                                       <Form.Field disabled={!values.member_id}>
-                                        <label>Payment Start Date</label>
+                                        <label>Loan Amount</label>
                                         <Field
                                           component={InputField}
-                                          name='loan_payment_start_date'
-                                          placeholder='Payment Start Date'
-                                          validate={required}
-                                          type='date'
+                                          name='loan_amount'
+                                          placeholder='Loan Amount'
+                                          validate={
+                                            composeValidators(loanAllowed(totalLoanableShares))
+                                          }
                                         />
                                       </Form.Field>
-                                    </Form.Group>
-                                  </Fragment>
-                                )
-                              }
-                            </FormSpy>
-                            <ShareRow />
-                          </Grid.Column>
-                          <Computation />
-                        </Grid.Row>
-                        <Grid.Row>
-                          <Grid.Column stretched>
-                            <div
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between'
-                              }}
-                            >
-                              <Button
-                                secondary
-                                type='button'
-                                onClick={() => {
-                                  setMemberShareValue(0)
-                                  setCoMaker1ShareValue(0)
-                                  setCoMaker2ShareValue(0)
-                                  form.reset()
-                                }}
-                              >
-                                Reset
-                              </Button>
-                              <FormSpy subscription={{
-                                invalid: true,
-                                pristine: true
-                              }}
-                              >
-                                {
-                                  ({ invalid, pristine }) => (
-                                    <Button
-                                      type='submit'
-                                      disabled={(invalid || pristine)} color='green'
-                                    >
-                                      For Approval
-                                    </Button>
+
+                                      <Form.Group widths='equal'>
+                                        <Form.Field disabled={!values.member_id}>
+                                          <label>Payment Term</label>
+                                          <Field
+                                            component={SelectField}
+                                            options={paymentTermSelection}
+                                            name='payment_term'
+                                            placeholder='payment_term'
+                                            validate={required}
+                                          />
+                                        </Form.Field>
+
+                                        <Form.Field disabled={!values.member_id}>
+                                          <label>Payment Start Date</label>
+                                          <Field
+                                            component={InputField}
+                                            name='loan_payment_start_date'
+                                            placeholder='Payment Start Date'
+                                            validate={required}
+                                            type='date'
+                                          />
+                                        </Form.Field>
+                                      </Form.Group>
+                                    </Fragment>
                                   )
                                 }
                               </FormSpy>
-                            </div>
-                          </Grid.Column>
-                        </Grid.Row>
-                      </Grid>
-                    </Form>
-                  )
+                              <ShareRow />
+                            </Grid.Column>
+                            <Computation />
+                          </Grid.Row>
+                          <Grid.Row>
+                            <Grid.Column stretched>
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between'
+                                }}
+                              >
+                                <Button
+                                  disabled={uuid}
+                                  secondary
+                                  type='button'
+                                  onClick={() => {
+                                    setMemberShareValue(0)
+                                    setCoMaker1ShareValue(0)
+                                    setCoMaker2ShareValue(0)
+                                    form.reset()
+                                  }}
+                                >
+                                  Reset
+                                </Button>
+                                <FormSpy subscription={{
+                                  invalid: true,
+                                  pristine: true
+                                }}
+                                >
+                                  {
+                                    ({ invalid, pristine }) => (
+                                      <Button
+                                        type='submit'
+                                        disabled={(invalid || pristine)} color='green'
+                                      >
+                                        For Approval
+                                      </Button>
+                                    )
+                                  }
+                                </FormSpy>
+                              </div>
+                            </Grid.Column>
+                          </Grid.Row>
+                        </Grid>
+                      </Form>
+                    )
+                  }
                 }
-              }
-            </ReactFinalForm>
-          </Segment>
-        </Grid.Column>
+              </ReactFinalForm>
+            </Segment>
+          </Grid.Column>
+        </Grid.Row>
       </Grid>
     </Context.Provider>
   )

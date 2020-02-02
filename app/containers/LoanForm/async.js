@@ -53,3 +53,81 @@ export const fetchLoanInfo = async args => {
 
   return responseHandling(res)
 }
+
+export const update = async args => {
+  const { uuid, ...rest } = args[0]
+  const res = await fetch(
+    `${API_URL}/loan/${uuid}`,
+    {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(rest)
+    }
+  )
+
+  return responseHandling(res)
+}
+
+export const createDisbursment = async args => {
+  const res = await fetch(
+    `${API_URL}/disbursment`,
+    {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(args[0])
+    }
+  )
+
+  return responseHandling(res)
+}
+
+export const fetchDisbursment = async args => {
+  const res = await fetch(
+    `${API_URL}/disbursment/${args[0].uuid}`,
+    {
+      method: 'GET',
+      headers
+    }
+  )
+
+  return responseHandling(res)
+}
+
+export const updateDisbursment = async args => {
+  const { uuid, ...rest } = args[0]
+  const res = await fetch(
+    `${API_URL}/disbursment/${uuid}`,
+    {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(rest)
+    }
+  )
+
+  return responseHandling(res)
+}
+
+export const crateEncashment = async args => {
+  const res = await fetch(
+    `${API_URL}/encashment`,
+    {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(args[0])
+    }
+  )
+
+  return responseHandling(res)
+}
+
+export const fetchEncashment = async args => {
+  const res = await fetch(
+    `${API_URL}/encashment/${args[0].uuid}`,
+    {
+      method: 'GET',
+      headers
+    }
+  )
+
+  return responseHandling(res)
+}

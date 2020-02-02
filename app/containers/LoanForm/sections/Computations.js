@@ -1,5 +1,10 @@
 import React, { useContext } from 'react'
-import { Grid, Segment, List, Statistic } from 'semantic-ui-react'
+import {
+  Grid,
+  Segment,
+  List,
+  Statistic
+} from 'semantic-ui-react'
 import { FormSpy } from 'react-final-form'
 import get from 'lodash/get'
 
