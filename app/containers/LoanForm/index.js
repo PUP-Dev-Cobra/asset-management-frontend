@@ -19,6 +19,7 @@ import Context from './context'
 import Computation from './sections/Computations'
 import ShareRow from './sections/ShareRow'
 import ActionnRow from './sections/ActionRow'
+import RecieptTable from './sections/RecieptTable'
 import {
   create as createAsync,
   update as updateAsync,
@@ -69,6 +70,7 @@ export default ({ history, match }) => {
   const [disbursmentValues, setDisbursmentValues] = useState({})
   const [memberSelection, setMemberSelection] = useState([])
   const [paymentTermSelection, setPaymentTermSelection] = useState([])
+  const [reciepts, setReciepts] = useState([])
 
   const [serviceCharge, setServiceCharge] = useState(0)
   const [interestCharge, setInterestCharge] = useState(0)
@@ -89,7 +91,10 @@ export default ({ history, match }) => {
   let fetchMemberAsync = {}
 
   if (uuid) {
-    fetchMemberAsync = useAsync({ promiseFn: fetchLoanInfo, uuid })
+    fetchMemberAsync = useAsync({ deferFn: fetchLoanInfo })
+    useEffect(() => {
+      fetchMemberAsync.run({ uuid })
+    }, [])
     useEffect(() => {
       useFetchAsyncOptions('share_per_amount', setShareAmount)
       if (fetchMemberAsync.isResolved) {
@@ -104,12 +109,14 @@ export default ({ history, match }) => {
           loan_payment_start_date,
           member,
           payment_term,
-          service_charge
+          service_charge,
+          reciepts
         } = fetchMemberAsync?.data?.response
 
         setCapitalBuildCharge(capital_build_up)
         setInterestCharge(interest)
         setServiceCharge(service_charge)
+        setReciepts(reciepts)
 
         fetchMemberSharesAsync.run({ uuid: member.uuid })
         setDisbursmentValues({ ...disbursment })
@@ -173,15 +180,14 @@ export default ({ history, match }) => {
   }
 
   useEffect(() => {
-    const isResolved = get(memberListAsync, 'isResolved')
+    const isResolved = memberListAsync?.isResolved
     if (isResolved) {
-      const data = get(memberListAsync, 'data.response')
-      setMemberSelection(data.map(r => (
-        {
-          key: r.uuid,
-          value: r.uuid,
-          text: `${r.last_name}, ${r.first_name} ${r.middle_name ?? ''}`
-        })))
+      const data = memberListAsync?.data?.response?.map(r => ({
+        key: r.uuid,
+        value: r.uuid,
+        text: `${r.last_name}, ${r.first_name} ${r.middle_name || ''}`
+      }))
+      setMemberSelection(data)
     }
   }, [memberListAsync.isResolved])
 
@@ -229,8 +235,10 @@ export default ({ history, match }) => {
         coMaker1ShareValue,
         coMaker2ShareValue,
         disbursmentValues,
+        fetchMemberAsync,
         interestCharge,
         memberShareValue,
+        reciepts,
         roundNumbers,
         serviceCharge,
         totalLoanableShares,
@@ -241,6 +249,10 @@ export default ({ history, match }) => {
         {
           uuid &&
             <ActionnRow />
+        }
+        {
+          reciepts.length > 0 &&
+            <RecieptTable />
         }
         <Grid.Row>
           <Grid.Column computer='13'>
@@ -264,7 +276,14 @@ export default ({ history, match }) => {
                         <Grid>
                           <Grid.Row>
                             <Grid.Column computer={10}>
-                              <Header as='h3'>Create Form</Header>
+                              {
+                                uuid &&
+                                  <Header as='h3'>Loan Information</Header>
+                              }
+                              {
+                                !uuid &&
+                                  <Header as='h3'>Create Loan</Header>
+                              }
                               <Form.Field>
                                 <label>Member</label>
                                 <Field
@@ -384,14 +403,9 @@ export default ({ history, match }) => {
                           </Grid.Row>
                           <Grid.Row>
                             <Grid.Column stretched>
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'space-between'
-                                }}
-                              >
+                              <div className='flex justify-between'>
                                 <Button
-                                  disabled={uuid}
+                                  disabled={Boolean(uuid)}
                                   secondary
                                   type='button'
                                   onClick={() => {

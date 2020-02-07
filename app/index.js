@@ -1,5 +1,4 @@
-import 'sanitize.css'
-import 'semantic-ui-css/semantic.css'
+import './styles/global.css'
 
 import React, { Suspense } from 'react'
 import { hot } from 'react-hot-loader'

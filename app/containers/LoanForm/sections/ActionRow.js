@@ -51,7 +51,7 @@ const ActionRow = props => {
                 </Button>
                 <Button
                   onClick={() => setPaymentModal(true)}
-                  success
+                  positive
                   size='large'
                   icon
                   color='green'

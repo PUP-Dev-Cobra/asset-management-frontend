@@ -1,29 +1,14 @@
 import React, { lazy, useEffect, useState } from 'react'
 import { Switch } from 'react-router-dom'
 import { Menu, Button, Image, Dropdown } from 'semantic-ui-react'
-import styled from 'styled-components'
 
 import RouteWithSubroutes from 'Components/RouteWithSubRoutes'
 
 import logoImg from 'Assets/logo.jpg'
 
-const LoadLedgerDashboard = lazy(() => import('Containers/Ledger' /* webpackChunkName: "Container-Home" */))
-
-const Containers = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-`
-
-const MenuNavigation = styled.div`
-  display: block;
-`
-
-const Content = styled.div`
-  display: block;
-  flex: 1;
-  overflow-y: auto;
-`
+const LoadLedgerDashboard = lazy(() => import('Containers/Ledger'
+  /* webpackChunkName: "Container-Ledger" */
+))
 
 const DashboardRoot = props => {
   const [userType, setUserType] = useState(null)
@@ -77,8 +62,8 @@ const DashboardRoot = props => {
   }, [])
 
   return (
-    <Containers>
-      <MenuNavigation>
+    <div className='flex flex-col h-screen'>
+      <div className='block'>
         <Menu size='large'>
           <Menu.Item onClick={() => history.push('/')}>
             <Image src={logoImg} avatar />
@@ -130,8 +115,8 @@ const DashboardRoot = props => {
             </Menu.Item>
           </Menu.Menu>
         </Menu>
-      </MenuNavigation>
-      <Content>
+      </div>
+      <div className='block flex-1 overflow-y-auto'>
         {
           isExact && match.path === '/ledger' &&
             <LoadLedgerDashboard />
@@ -144,8 +129,8 @@ const DashboardRoot = props => {
               }
             </Switch>
         }
-      </Content>
-    </Containers>
+      </div>
+    </div>
   )
 }
 

@@ -44,7 +44,7 @@ export const fetchMemberShares = async args => {
 
 export const fetchLoanInfo = async args => {
   const res = await fetch(
-    `${API_URL}/loan/${args.uuid}`,
+    `${API_URL}/loan/${args[0].uuid}`,
     {
       method: 'GET',
       headers
@@ -126,6 +126,19 @@ export const fetchEncashment = async args => {
     {
       method: 'GET',
       headers
+    }
+  )
+
+  return responseHandling(res)
+}
+
+export const submitReciept = async args => {
+  const res = await fetch(
+    `${API_URL}/reciept`,
+    {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(args[0])
     }
   )
 
