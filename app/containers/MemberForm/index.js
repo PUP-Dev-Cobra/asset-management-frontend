@@ -51,7 +51,6 @@ export default ({ history, match }) => {
   const [initalValues, setInitialValues] = useState(null)
   const [forDeletion, setForDeletion] = useState([])
   const [formStatus, setFormStatus] = useState(null)
-  const [addShare, setAddShare] = useState(false)
 
   if (uuid) {
     fetchAsync = useAsync({ promiseFn: fetchMember, uuid })
@@ -71,6 +70,8 @@ export default ({ history, match }) => {
       uuid,
       forDeletion
     }
+
+    delete forSending?.memberForm?.share?.total_share_amount
 
     onSubmitAsync.run(
       forSending
@@ -122,9 +123,6 @@ export default ({ history, match }) => {
         const fetchedData = { ...fetchAsync.data }
         fetchedData.share = fetchAsync.data.shares[0]
         delete fetchAsync.data.shares
-        if (fetchedData.share) {
-          setAddShare(true)
-        }
         setInitialValues({ ...fetchedData })
       }
     },
@@ -451,57 +449,41 @@ export default ({ history, match }) => {
                     </Form.Field>
 
                     <Form.Group widths='equal'>
-                      {
-                        !addShare &&
-                          <Form.Field>
-                            <Segment placeholder>
-                              <Button
-                                type='button'
-                                onClick={() => setAddShare(!addShare)}
-                              >
-                                Add Share
-                              </Button>
-                            </Segment>
-                          </Form.Field>
-                      }
-                      {
-                        addShare &&
-                          <Form.Field>
-                            <Header as='h1'>Share</Header>
-                            <Segment>
-                              <Form.Group widths='equal'>
-                                <Form.Field>
-                                  <label>Share Purchase</label>
-                                  <Field
-                                    name='share.share_count'
-                                    placeholder='Beneficiary'
-                                    component={InputField}
-                                    type='number'
-                                    validate={required}
-                                  />
-                                </Form.Field>
-                                <Form.Field>
-                                  <label>Share Per Amount</label>
-                                  <Field
-                                    name='share.share_per_amount'
-                                    readOnly
-                                    placeholder='Beneficiary'
-                                    component={InputField}
-                                  />
-                                </Form.Field>
-                                <Form.Field>
-                                  <label>Total Amount</label>
-                                  <Field
-                                    name='share.total_share_amount'
-                                    readOnly
-                                    placeholder='Beneficiary'
-                                    component={InputField}
-                                  />
-                                </Form.Field>
-                              </Form.Group>
-                            </Segment>
-                          </Form.Field>
-                      }
+                      <Form.Field>
+                        <Header as='h1'>Share</Header>
+                        <Segment>
+                          <Form.Group widths='equal'>
+                            <Form.Field>
+                              <label>Share Purchase</label>
+                              <Field
+                                name='share.share_count'
+                                placeholder='Beneficiary'
+                                component={InputField}
+                                type='number'
+                                validate={required}
+                              />
+                            </Form.Field>
+                            <Form.Field>
+                              <label>Share Per Amount</label>
+                              <Field
+                                name='share.share_per_amount'
+                                readOnly
+                                placeholder='Beneficiary'
+                                component={InputField}
+                              />
+                            </Form.Field>
+                            <Form.Field>
+                              <label>Total Amount</label>
+                              <Field
+                                name='share.total_share_amount'
+                                readOnly
+                                placeholder='Beneficiary'
+                                component={InputField}
+                              />
+                            </Form.Field>
+                          </Form.Group>
+                        </Segment>
+                      </Form.Field>
                     </Form.Group>
 
                     <Form.Field>
