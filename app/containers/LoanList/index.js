@@ -1,61 +1,97 @@
 import React from 'react'
-import {Table,Pagination,Grid,Input,Label,Segment,Button,Icon} from 'semantic-ui-react'
-export default () => {
+import {
+  Table,
+  Grid,
+  Input,
+  Segment,
+  Dimmer,
+  Loader
+} from 'semantic-ui-react'
+import { useAsync } from 'react-async'
+import get from 'lodash/get'
+
+import { list as loanListAsync } from './async'
+
+export default ({ history }) => {
+  const loanListFetch = useAsync({ promiseFn: loanListAsync })
+  const loanList = get(loanListFetch, 'data.response') || []
+
   return (
-   <Grid centered style={{height: '90vh' }} verticalAlign='middle'>
-     <Grid.Column width='13' >
-       <Segment stacked>
-       <Grid textAlign='left'>
-         <Grid.Row style={{ paddingBottom: "1rem" }}>
-            <Grid.Column  computer='3'>
-            <Input icon='search' iconPosition='left' placeholder='search' />
-            </Grid.Column>
-            <Grid.Column  computer='12' verticalAlign='middle'>
-              <Label as='a' tag> Filter 1</Label>
-              <Label as='a' tag> Filter 2</Label>
-              <Label as='a' tag> Filter 3</Label>
-            </Grid.Column>
-            <Grid.Column computer={1} textAlign="right"> 
-                <Button icon>
-                  <Icon name='filter' />
-                </Button>
+    <Grid centered container padded='vertically'>
+      <Grid.Column width='13'>
+        <Segment stacked>
+          <Dimmer
+            active={loanListFetch.isPending}
+            inverted
+          >
+            <Loader />
+          </Dimmer>
+
+          <Grid textAlign='left'>
+            <Grid.Row>
+              <Grid.Column computer='3'>
+                <Input icon='search' iconPosition='left' placeholder='search' />
               </Grid.Column>
-         </Grid.Row>
-         
-         <Grid.Column computer='16'>
-            <Table celled>
-              <Table.Header>
-                <Table.Row>
-                  <Table.HeaderCell> Name </Table.HeaderCell>
-                  <Table.HeaderCell> Amount </Table.HeaderCell>
-                  <Table.HeaderCell> Remaining </Table.HeaderCell>
-                  <Table.HeaderCell> Status </Table.HeaderCell>
-                  <Table.HeaderCell> Date </Table.HeaderCell>
-                </Table.Row>
-              </Table.Header>
+            </Grid.Row>
 
-              <Table.Body>
-                <Table.Row>
-                  <Table.Cell> Info</Table.Cell>
-                  <Table.Cell> Info</Table.Cell>
-                  <Table.Cell> Info</Table.Cell>
-                  <Table.Cell> Info</Table.Cell>
-                  <Table.Cell> Info</Table.Cell>
-                </Table.Row>
-              </Table.Body>
+            <Grid.Column computer='16'>
+              <Table
+                celled
+                selectable
+              >
+                <Table.Header>
+                  <Table.Row>
+                    <Table.HeaderCell>Name</Table.HeaderCell>
+                    <Table.HeaderCell>Date of Birth</Table.HeaderCell>
+                    <Table.HeaderCell>Amount</Table.HeaderCell>
+                    <Table.HeaderCell>Remaining</Table.HeaderCell>
+                    <Table.HeaderCell>Status</Table.HeaderCell>
+                    <Table.HeaderCell>Payment Start Date</Table.HeaderCell>
+                  </Table.Row>
+                </Table.Header>
 
-              <Table.Footer>
-                <Table.Row>
-                  <Table.HeaderCell colSpan='5' textAlign='right'>
-                    <Pagination defaultActivePage={5} totalPages={10} />
-                  </Table.HeaderCell>
-                </Table.Row>
-              </Table.Footer>
-            </Table>
-         </Grid.Column>
-       </Grid>
-       </Segment>
-     </Grid.Column>
-   </Grid>
+                <Table.Body>
+                  {
+                    loanList.map(r => {
+                      return (
+                        <Table.Row
+                          key={r.uuid}
+                          onClick={() => history.push(`/loan/${r.uuid}`)}
+                        >
+                          <Table.Cell>
+                            {
+                              `
+                                ${r.member.last_name},
+                                ${r.member.first_name},
+                                ${(r.member.middle_name)
+                                  ? r.member.middle_name
+                                  : ''
+                                }
+                              `
+                            }
+                          </Table.Cell>
+                          <Table.Cell>
+                            {`${r.member.dob}`}
+                          </Table.Cell>
+                          <Table.Cell>
+                            {`${r.loan_amount.toLocaleString()}`}
+                          </Table.Cell>
+                          <Table.Cell>XXXX</Table.Cell>
+                          <Table.Cell>{`${r.status}`}</Table.Cell>
+                          <Table.Cell>
+                            {`${r.loan_payment_start_date}`}
+                          </Table.Cell>
+                        </Table.Row>
+                      )
+                    })
+                  }
+                </Table.Body>
+
+              </Table>
+            </Grid.Column>
+          </Grid>
+        </Segment>
+      </Grid.Column>
+    </Grid>
   )
 }
