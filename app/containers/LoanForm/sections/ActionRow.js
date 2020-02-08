@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useState, useContext } from 'react'
 import {
   Button,
   Grid,
@@ -9,11 +9,18 @@ import {
   Icon
 } from 'semantic-ui-react'
 
+import Context from './../context'
 import ModalDisbursment from './ModalDisbursment'
 import ModalEncashment from './ModalEncashment'
 import ModalPayment from './ModalPayment'
 
 const ActionRow = props => {
+  const {
+    currentPaymentTerm,
+    maxPaymentTerm,
+    netPayAmount,
+    totalPaymentLoan
+  } = useContext(Context)
   const [disbursmentModal, setDisbursmentModal] = useState(false)
   const [encashmentModal, setEncashmentmodal] = useState(false)
   const [paymentModal, setPaymentModal] = useState(false)
@@ -67,11 +74,22 @@ const ActionRow = props => {
                   <Segment>
                     <Statistic>
                       <Statistic.Value>
-                        999
+                        {
+                          (
+                            (
+                              totalPaymentLoan -
+                              (netPayAmount * (currentPaymentTerm - 1))
+                            ) ||
+                            0
+                          ).toLocaleString()
+                        }
                       </Statistic.Value>
                       <Statistic.Label>Remaining Balance</Statistic.Label>
                     </Statistic>
-                    <Progress percent={50} attached='bottom' />
+                    <Progress
+                      percent={((currentPaymentTerm - 1) / maxPaymentTerm) * 100}
+                      attached='bottom'
+                    />
                   </Segment>
                 </div>
               </Grid.Column>

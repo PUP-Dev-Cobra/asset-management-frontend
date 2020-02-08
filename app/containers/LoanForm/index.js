@@ -76,6 +76,10 @@ export default ({ history, match }) => {
   const [interestCharge, setInterestCharge] = useState(0)
   const [capitalBuildCharge, setCapitalBuildCharge] = useState(0)
   const [shareAmount, setShareAmount] = useState(0)
+  const [netPayAmount, setNetpayAmount] = useState(0)
+  const [currentPaymentTerm, setCurrentPaymentTerm] = useState(0)
+  const [totalPaymentLoan, setTotalPaymentLoan] = useState(0)
+  const [maxPaymentTerm, setMaxPaymentTerm] = useState(0)
 
   const [memberShareValue, setMemberShareValue] = useState(0)
   const [coMaker1ShareValue, setCoMaker1ShareValue] = useState(0)
@@ -117,6 +121,8 @@ export default ({ history, match }) => {
         setInterestCharge(interest)
         setServiceCharge(service_charge)
         setReciepts(reciepts)
+        setCurrentPaymentTerm(reciepts.length + 1)
+        setMaxPaymentTerm(payment_term)
 
         fetchMemberSharesAsync.run({ uuid: member.uuid })
         setDisbursmentValues({ ...disbursment })
@@ -234,14 +240,20 @@ export default ({ history, match }) => {
         capitalBuildCharge,
         coMaker1ShareValue,
         coMaker2ShareValue,
+        currentPaymentTerm,
         disbursmentValues,
         fetchMemberAsync,
         interestCharge,
+        maxPaymentTerm,
         memberShareValue,
+        netPayAmount,
         reciepts,
         roundNumbers,
         serviceCharge,
+        setNetpayAmount,
+        setTotalPaymentLoan,
         totalLoanableShares,
+        totalPaymentLoan,
         uuid
       }}
     >

@@ -1,6 +1,14 @@
 import React, { useContext, useEffect } from 'react'
 import { Form as ReactFinalForm, Field } from 'react-final-form'
-import { Modal, Form, Button, Dimmer, Loader } from 'semantic-ui-react'
+import {
+  Button,
+  Dimmer,
+  Form,
+  Header,
+  Loader,
+  Modal,
+  Segment
+} from 'semantic-ui-react'
 import { useAsync } from 'react-async'
 
 import { InputField } from 'Components/InputFields'
@@ -10,7 +18,13 @@ import { submitReciept as submitRecieptAsync } from './../async'
 
 const PaymentModal = ({ isOpen, onClose }) => {
   const formSubmit = useAsync({ deferFn: submitRecieptAsync })
-  const { uuid, fetchMemberAsync } = useContext(Context)
+  const {
+    currentPaymentTerm,
+    fetchMemberAsync,
+    maxPaymentTerm,
+    netPayAmount,
+    uuid
+  } = useContext(Context)
 
   const onSubmit = values => {
     formSubmit.run({
@@ -27,7 +41,13 @@ const PaymentModal = ({ isOpen, onClose }) => {
   }, [formSubmit?.isResolved])
 
   return (
-    <ReactFinalForm onSubmit={onSubmit}>
+    <ReactFinalForm
+      onSubmit={onSubmit}
+      initialValues={{
+        amount: netPayAmount,
+        loan_payment_term: currentPaymentTerm
+      }}
+    >
       {
         ({ form, handleSubmit }) => {
           const isPending = formSubmit?.isPending
@@ -46,35 +66,50 @@ const PaymentModal = ({ isOpen, onClose }) => {
                 <Dimmer active={isPending} inverted>
                   <Loader />
                 </Dimmer>
-                <div className='ui form'>
-                  <Form.Field>
-                    <label>Reciept Number</label>
-                    <Field
-                      name='or_number'
-                      component={InputField}
-                    />
-                  </Form.Field>
-                  <Form.Field>
-                    <label>Amount Payment</label>
-                    <Field
-                      name='amount'
-                      component={InputField}
-                    />
-                  </Form.Field>
-                  <Form.Field>
-                    <label>Payment Term</label>
-                    <Field
-                      name='loan_payment_term'
-                      component={InputField}
-                    />
-                  </Form.Field>
-                </div>
+                {
+                  currentPaymentTerm > maxPaymentTerm &&
+                    <Segment placeholder>
+                      <Header className='flex justify-center'>
+                        You pave paid off your loan
+                      </Header>
+                    </Segment>
+
+                }
+                {
+                  maxPaymentTerm > currentPaymentTerm &&
+                    <div className='ui form'>
+                      <Form.Field>
+                        <label>Reciept Number</label>
+                        <Field
+                          name='or_number'
+                          component={InputField}
+                        />
+                      </Form.Field>
+                      <Form.Field>
+                        <label>Amount Payment</label>
+                        <Field
+                          name='amount'
+                          component={InputField}
+                        />
+                      </Form.Field>
+                      <Form.Field>
+                        <label>Payment Term</label>
+                        <Field
+                          name='loan_payment_term'
+                          component={InputField}
+                        />
+                      </Form.Field>
+                    </div>
+                }
               </Modal.Content>
-              <Modal.Actions>
-                <Button primary type='submit'>
+              {
+                maxPaymentTerm > currentPaymentTerm &&
+                  <Modal.Actions>
+                    <Button primary type='submit'>
                   Make Payment
-                </Button>
-              </Modal.Actions>
+                    </Button>
+                  </Modal.Actions>
+              }
             </Modal>
           )
         }

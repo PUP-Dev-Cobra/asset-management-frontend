@@ -16,8 +16,11 @@ const Computations = props => {
     interestCharge,
     roundNumbers,
     serviceCharge,
+    setNetpayAmount,
+    setTotalPaymentLoan,
     totalLoanableShares
   } = useContext(Context)
+  let netPaypermonth = 0
 
   return (
     <Grid.Column computer={6} verticalAlign='middle'>
@@ -33,7 +36,9 @@ const Computations = props => {
 
             const netLoanPayment = loanAmount - capitalBuildUpPayment - interestChargePayment - serviceChargePayment
 
-            const netPaypermonth = netLoanPayment / payTerm || 0
+            netPaypermonth = netLoanPayment / payTerm ?? 0
+            setNetpayAmount(netPaypermonth)
+            setTotalPaymentLoan(netLoanPayment)
 
             return (
               <Segment size='large'>
