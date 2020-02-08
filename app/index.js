@@ -3,6 +3,8 @@ import './styles/global.css'
 import React, { Suspense } from 'react'
 import { hot } from 'react-hot-loader'
 import ReactDOM from 'react-dom'
+import LocalizedFormat from 'dayjs/plugin/localizedFormat'
+import dayjs from 'dayjs'
 
 import RouteWithSubroutes from 'Components/RouteWithSubRoutes'
 import routes from './routes'
@@ -11,6 +13,7 @@ import { BrowserRouter as Router, Switch } from 'react-router-dom'
 const env = process.env.NODE_ENV
 
 const App = () => {
+  dayjs.extend(LocalizedFormat)
   return (
     <Router>
       <Suspense fallback={<p>Loading</p>}>
