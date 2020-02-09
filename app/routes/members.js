@@ -13,7 +13,7 @@ export default [
     exact: true
   },
   {
-    path: '/member/detail',
+    path: '/member/detail/:id',
     component: LoadMemberDetail,
     exact: true
   },
