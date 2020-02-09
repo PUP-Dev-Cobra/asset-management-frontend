@@ -27,12 +27,12 @@ export default ({ history }) => {
             <Loader />
           </Dimmer>
           <Grid textAlign='left'>
-            <Grid.Row style={{ paddingBottom: '1rem' }}>
+            <Grid.Row>
               <Grid.Column stretched>
                 <ul
-                  style={{ display: 'flex', listStyleType: 'none', padding: 0 }}
+                  className='flex list-none p-0'
                 >
-                  <li style={{ paddingRight: '1rem' }}>
+                  <li className='pr-1'>
                     <Input
                       icon='search'
                       iconPosition='left'
@@ -77,15 +77,21 @@ export default ({ history }) => {
                   </Table.Header>
                   <Table.Body>
                     {
-                      memberList.map((r, i) => (
+                      memberList.map((r) => (
                         <Table.Row
                           key={r.uuid}
-                          onClick={() => history.push(`/member/${r.uuid}`)}
+                          onClick={() => history.push(`/member/detail/${r.uuid}`)}
                         >
                           <Table.Cell>
                             {
                               `
-                                ${r.last_name}, ${r.first_name}, ${(r.middle_name) ? r.middle_name : ''}
+                                ${r.last_name}, ${r.first_name}
+                              `
+                            }
+                            {
+                              r?.middle_name &&
+                              `
+                                ,${r?.middle_name}
                               `
                             }
                           </Table.Cell>
