@@ -76,7 +76,7 @@ const PaymentModal = ({ isOpen, onClose }) => {
 
                 }
                 {
-                  maxPaymentTerm > currentPaymentTerm &&
+                  maxPaymentTerm >= currentPaymentTerm &&
                     <div className='ui form'>
                       <Form.Field>
                         <label>Reciept Number</label>
@@ -103,10 +103,10 @@ const PaymentModal = ({ isOpen, onClose }) => {
                 }
               </Modal.Content>
               {
-                maxPaymentTerm > currentPaymentTerm &&
+                maxPaymentTerm >= currentPaymentTerm &&
                   <Modal.Actions>
                     <Button primary type='submit'>
-                  Make Payment
+                      Make Payment
                     </Button>
                   </Modal.Actions>
               }
