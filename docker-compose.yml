@@ -7,7 +7,5 @@ services:
       dockerfile: ./.docker/Dockerfile
     ports:
       - 3101:3100
-    volumes:
-      - .:/app
-    command: npm run start:dev
+
     
