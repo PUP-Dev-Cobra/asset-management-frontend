@@ -13,9 +13,12 @@ import get from 'lodash/get'
 import { useAsync } from 'react-async'
 import dayjs from 'dayjs'
 
+import { userInfo } from 'Helpers/utils'
+
 import { memberListAsync } from './async'
 
 export default ({ history }) => {
+  const { user_type } = userInfo()
   const { data, error, isPending } = useAsync({ promiseFn: memberListAsync })
   const memberList = get(data, 'response') || []
 
@@ -77,47 +80,55 @@ export default ({ history }) => {
                   </Table.Header>
                   <Table.Body>
                     {
-                      memberList.map((r) => (
-                        <Table.Row
-                          key={r.uuid}
-                          onClick={() => history.push(`/member/detail/${r.uuid}`)}
-                        >
-                          <Table.Cell>
-                            {
-                              `
-                                ${r.last_name}, ${r.first_name}
-                              `
-                            }
-                            {
-                              r?.middle_name &&
-                              `
-                                ,${r?.middle_name}
-                              `
-                            }
-                          </Table.Cell>
-                          <Table.Cell>
-                            {
-                              dayjs(r.dob).format('MMM DD, YYYY')
-                            }
-                          </Table.Cell>
-                          <Table.Cell>
-                            {
-                              r.address
-                            }
-                          </Table.Cell>
-                          <Table.Cell>
-                            {
-                              r.contact_no
-                            }
-                          </Table.Cell>
-                          <Table.Cell
-                            negative={r.status === 'pending'}
-                            positive={r.status === 'approved'}
+                      memberList.map((r) => {
+                        let redirect = null
+                        if (user_type === 'approver') {
+                          redirect = `/member/${r.uuid}`
+                        } else if (user_type === 'teller') {
+                          redirect = `/member/detail/${r.uuid}`
+                        }
+                        return (
+                          <Table.Row
+                            key={r.uuid}
+                            onClick={() => history.push(redirect)}
                           >
-                            {r.status}
-                          </Table.Cell>
-                        </Table.Row>
-                      ))
+                            <Table.Cell>
+                              {
+                                `
+                                  ${r.last_name}, ${r.first_name}
+                                `
+                              }
+                              {
+                                r?.middle_name &&
+                                `
+                                  ,${r?.middle_name}
+                                `
+                              }
+                            </Table.Cell>
+                            <Table.Cell>
+                              {
+                                dayjs(r.dob).format('MMM DD, YYYY')
+                              }
+                            </Table.Cell>
+                            <Table.Cell>
+                              {
+                                r.address
+                              }
+                            </Table.Cell>
+                            <Table.Cell>
+                              {
+                                r.contact_no
+                              }
+                            </Table.Cell>
+                            <Table.Cell
+                              negative={r.status === 'pending'}
+                              positive={r.status === 'approved'}
+                            >
+                              {r.status}
+                            </Table.Cell>
+                          </Table.Row>
+                        )
+                      })
                     }
                   </Table.Body>
                 </Table>

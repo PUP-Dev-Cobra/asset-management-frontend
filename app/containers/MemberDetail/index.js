@@ -48,7 +48,15 @@ export default ({ history, match }) => {
             <Grid.Column>
               <Segment>
                 <ul className='block'>
-                  <li className='flex justify-end'>
+                  <li className='flex justify-between items-center'>
+                    <div>
+                      <Label
+                        horizontal
+                        color={(memberInfo?.status === 'approved') ? 'green' : 'gray'}
+                      >
+                        {memberInfo?.status}
+                      </Label>
+                    </div>
                     <Button
                       icon
                       onClick={() => history.push(`/member/${match?.params?.id}`)}
@@ -153,7 +161,13 @@ export default ({ history, match }) => {
                           {r?.loan_amount}
                         </List.Content>
                         <List.Content>
-                          <Label horizontal>{r?.status}</Label>
+                          <Label
+                            horizontal
+                            color={r?.status === 'approved' && 'green'}
+                            className='w-20'
+                          >
+                            {r?.status}
+                          </Label>
                           {dayjs(r?.created_at).format('lll')}
                         </List.Content>
                       </List.Item>

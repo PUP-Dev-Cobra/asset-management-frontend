@@ -77,7 +77,12 @@ export default ({ history }) => {
                             {`${r.loan_amount.toLocaleString()}`}
                           </Table.Cell>
                           <Table.Cell>XXXX</Table.Cell>
-                          <Table.Cell>{`${r.status}`}</Table.Cell>
+                          <Table.Cell
+                            positive={(r.status === 'approved')}
+                            negative={(r.status === 'rejected')}
+                          >
+                            {`${r.status}`}
+                          </Table.Cell>
                           <Table.Cell>
                             {`${r.loan_payment_start_date}`}
                           </Table.Cell>

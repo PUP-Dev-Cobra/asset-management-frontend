@@ -17,12 +17,10 @@ export const SelectField = ({ input, meta, ...rest }) => (
   <Fragment>
     <Form.Select
       {...input}
-      onChange={
-        (e, { value }) => {
-          if (rest.onChangeCb) rest.onChangeCb(value)
-          return input.onChange(value)
-        }
-      }
+      onChange={(e, { value }) => {
+        if (rest.onChangeCb) rest.onChangeCb(value)
+        return input.onChange(value)
+      }}
       control={Select}
       value={input.value}
       {...rest}
