@@ -1,17 +1,18 @@
-import React, { lazy, useEffect, useState } from 'react'
+import React, { lazy, useEffect } from 'react'
 import { Switch } from 'react-router-dom'
 import { Menu, Button, Image, Dropdown } from 'semantic-ui-react'
 
 import RouteWithSubroutes from 'Components/RouteWithSubRoutes'
 
 import logoImg from 'Assets/logo.jpg'
+import { userInfo } from 'Helpers/utils'
 
 const LoadLedgerDashboard = lazy(() => import('Containers/Ledger'
   /* webpackChunkName: "Container-Ledger" */
 ))
 
 const DashboardRoot = props => {
-  const [userType, setUserType] = useState(null)
+  const { user_type } = userInfo()
   const { match, routes, history, location } = props
   const { isExact } = match
 
@@ -55,9 +56,6 @@ const DashboardRoot = props => {
     const token = localStorage.getItem('jwt_token', null)
     if (!token) {
       history.push('/')
-    } else {
-      const userType = localStorage.getItem('user_type')
-      setUserType(userType)
     }
   }, [])
 
@@ -69,32 +67,32 @@ const DashboardRoot = props => {
             <Image src={logoImg} avatar />
           </Menu.Item>
           {
-            (userType === 'teller' || userType === 'approver') &&
+            (user_type === 'teller' || user_type === 'approver') &&
               <Menu.Item active={match.path === '/member'} link onClick={() => history.push('/member/list')}>
                 Member
               </Menu.Item>
           }
           {
-            (userType === 'teller' || userType === 'approver') &&
+            (user_type === 'teller' || user_type === 'approver') &&
               <Menu.Item active={match.path === '/loan'} link onClick={() => history.push('/loan/list')}>
                 Loans
               </Menu.Item>
           }
           {
-            (userType === 'teller' || userType === 'approver') &&
+            (user_type === 'teller' || user_type === 'approver') &&
               <Menu.Item active={match.path === '/ledger'} link onClick={() => history.push('/ledger')}>
               Ledger
               </Menu.Item>
           }
           {
-            userType === 'admin' &&
+            user_type === 'admin' &&
               <Menu.Item active={match.path === '/user'} link onClick={() => history.push('/user/list')}>
                 User
               </Menu.Item>
           }
           <Menu.Menu position='right'>
             {
-              showButton &&
+              showButton && user_type === 'teller' &&
                 <Menu.Item>
                   <Button primary onClick={() => history.push(redirect)}>
                     Create

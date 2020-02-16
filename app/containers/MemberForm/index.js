@@ -13,11 +13,11 @@ import arrayMutators from 'final-form-arrays'
 import { Form as ReactFinalForm, FormSpy, Field } from 'react-final-form'
 import { FieldArray } from 'react-final-form-arrays'
 import { useAsync } from 'react-async'
-import get from 'lodash/get'
 import dayjs from 'dayjs'
 import createDecorator from 'final-form-calculate'
 
 import { required } from 'App/validations'
+import { userInfo } from 'Helpers/utils'
 import { InputField, SelectField } from 'Components/InputFields'
 
 import {
@@ -43,7 +43,8 @@ const formCalculators = createDecorator(
 )
 
 export default ({ history, match }) => {
-  const uuid = get(match, 'params.id')
+  const uuid = match?.params?.id
+  const { user_type } = userInfo()
   let fetchAsync = {}
   let onSubmitAsync = useAsync({
     deferFn: createAsync
@@ -52,6 +53,10 @@ export default ({ history, match }) => {
   const [forDeletion, setForDeletion] = useState([])
   const [formStatus, setFormStatus] = useState(null)
 
+  const isReadOnly = (
+    formStatus === 'approved' ||
+    user_type === 'approver'
+  )
   if (uuid) {
     fetchAsync = useAsync({ promiseFn: fetchMember, uuid })
     onSubmitAsync = useAsync({ deferFn: updateAsync, uuid })
@@ -62,16 +67,18 @@ export default ({ history, match }) => {
   })
 
   const onSubmit = values => {
-    const forSending = {
-      memberForm: {
-        ...values,
-        status: formStatus
-      },
-      uuid,
-      forDeletion
+    let memberForm = {}
+    const forSending = {}
+    if (user_type === 'teller') {
+      memberForm = {
+        ...values
+      }
+      forSending.forDeletion = forDeletion
+      delete memberForm?.share?.total_share_amount
     }
-
-    delete forSending?.memberForm?.share?.total_share_amount
+    memberForm.status = formStatus
+    forSending.memberForm = { ...memberForm }
+    forSending.uuid = uuid
 
     onSubmitAsync.run(
       forSending
@@ -95,18 +102,11 @@ export default ({ history, match }) => {
     option_name: 'share_per_amount'
   })
 
-  const genderOptions = get(
-    genderOptionsAsync,
-    'data.response') || []
-  const civilStatusOptions = get(
-    civilStatusOptionsAsync,
-    'data.response') || []
-  const sourceOfIncomeOptions = get(
-    sourceOfIncomOptionsAsync,
-    'data.response') || []
-  const sharePerAmountOption = get(
-    sharePerAmountOptionAsync,
-    'data.response') || [{ option_value: 0 }]
+  const genderOptions = genderOptionsAsync?.data?.response ?? []
+  const civilStatusOptions = civilStatusOptionsAsync?.data?.response ?? []
+  const sourceOfIncomeOptions = sourceOfIncomOptionsAsync?.data?.response ?? []
+
+  const sharePerAmountOption = sharePerAmountOptionAsync?.data?.response ?? [{ option_value: 0 }]
 
   useEffect(
     () => {
@@ -123,6 +123,7 @@ export default ({ history, match }) => {
         const fetchedData = { ...fetchAsync.data }
         fetchedData.share = fetchAsync.data.shares[0]
         delete fetchAsync.data.shares
+        setFormStatus(fetchedData.status)
         setInitialValues({ ...fetchedData })
       }
     },
@@ -149,6 +150,12 @@ export default ({ history, match }) => {
       <Grid.Column computer={13}>
         <Segment>
           <Header as='h1'>Membership Form</Header>
+          {
+            formStatus === 'approved' &&
+              <Message positive>
+                This Member is already approved
+              </Message>
+          }
           {
             createMemberSubmit.error &&
               <Message negative>
@@ -183,6 +190,7 @@ export default ({ history, match }) => {
                           placeholder='First Name'
                           component={InputField}
                           validate={required}
+                          readOnly={isReadOnly}
                         />
                       </Form.Field>
                       <Form.Field>
@@ -191,6 +199,7 @@ export default ({ history, match }) => {
                           name='middle_name'
                           placeholder='Middle Name'
                           component={InputField}
+                          readOnly={isReadOnly}
                         />
                       </Form.Field>
                       <Form.Field>
@@ -200,6 +209,7 @@ export default ({ history, match }) => {
                           placeholder='Last Name'
                           component={InputField}
                           validate={required}
+                          readOnly={isReadOnly}
                         />
                       </Form.Field>
                       <Form.Field>
@@ -208,6 +218,7 @@ export default ({ history, match }) => {
                           name='nickname'
                           placeholder='Nickname'
                           component={InputField}
+                          readOnly={isReadOnly}
                         />
                       </Form.Field>
                     </Form.Group>
@@ -219,6 +230,7 @@ export default ({ history, match }) => {
                           placeholder='Date of Birth'
                           component={InputField}
                           validate={required}
+                          readOnly={isReadOnly}
                           type='date'
                         />
                       </Form.Field>
@@ -239,6 +251,7 @@ export default ({ history, match }) => {
                           component={SelectField}
                           validate={required}
                           loading={genderOptionsAsync.isPending}
+                          disabled={isReadOnly}
                           options={
                             genderOptions.map(
                               (value, index) => ({
@@ -255,6 +268,7 @@ export default ({ history, match }) => {
                           name='religion'
                           placeholder='Religion'
                           component={InputField}
+                          readOnly={isReadOnly}
                           validate={required}
                         />
                       </Form.Field>
@@ -266,6 +280,7 @@ export default ({ history, match }) => {
                           name='civil_status'
                           component={SelectField}
                           validate={required}
+                          disabled={isReadOnly}
                           loading={civilStatusOptionsAsync.isPending}
                           options={civilStatusOptions.map(
                             (value, index) => ({
@@ -288,6 +303,7 @@ export default ({ history, match }) => {
                                     name='spouse_name'
                                     disabled={(civil_status !== 'married')}
                                     placeholder='Spouse Name'
+                                    readOnly={isReadOnly}
                                     component={InputField}
                                     validate={required}
                                   />
@@ -304,6 +320,7 @@ export default ({ history, match }) => {
                           name='address'
                           placeholder='Address'
                           component={InputField}
+                          readOnly={isReadOnly}
                           validate={required}
                         />
                       </Form.Field>
@@ -313,6 +330,7 @@ export default ({ history, match }) => {
                           name='contact_no'
                           placeholder='Contact No'
                           component={InputField}
+                          readOnly={isReadOnly}
                           validate={required}
                         />
                       </Form.Field>
@@ -324,6 +342,7 @@ export default ({ history, match }) => {
                           name='source_of_income'
                           placeholder='Occupaton / Source of Income'
                           component={InputField}
+                          disabled={isReadOnly}
                           validate={required}
                         />
                       </Form.Field>
@@ -333,6 +352,7 @@ export default ({ history, match }) => {
                           name='tin_oca'
                           placeholder='TIN/OSCA'
                           component={InputField}
+                          readOnly={isReadOnly}
                           validate={required}
                         />
                       </Form.Field>
@@ -343,6 +363,7 @@ export default ({ history, match }) => {
                           component={SelectField}
                           validate={required}
                           loading={sourceOfIncomOptionsAsync.isPending}
+                          disabled={isReadOnly}
                           options={sourceOfIncomeOptions.map(
                             (value, index) => ({
                               value: value.option_value,
@@ -373,16 +394,19 @@ export default ({ history, match }) => {
                                         name={`${name}.first_name`}
                                         placeholder='First Name'
                                         component={InputField}
+                                        readOnly={isReadOnly}
                                         validate={required}
                                       />
                                       <Field
                                         name={`${name}.middle_name`}
                                         placeholder='Middle Name'
+                                        readOnly={isReadOnly}
                                         component={InputField}
                                       />
                                       <Field
                                         name={`${name}.last_name`}
                                         placeholder='Middle Name'
+                                        readOnly={isReadOnly}
                                         component={InputField}
                                       />
                                     </Table.Cell>
@@ -391,6 +415,7 @@ export default ({ history, match }) => {
                                         name={`${name}.relationship`}
                                         placeholder='Beneficiary'
                                         component={InputField}
+                                        readOnly={isReadOnly}
                                         validate={required}
                                       />
                                     </Table.Cell>
@@ -400,51 +425,59 @@ export default ({ history, match }) => {
                                         placeholder='Beneficiary'
                                         component={InputField}
                                         validate={required}
+                                        readOnly={isReadOnly}
                                         type='date'
                                       />
                                     </Table.Cell>
-                                    <Table.Cell textAlign='center'>
-                                      <Button
-                                        onClick={() => {
-                                          if (fields.value[index].id) {
-                                            setForDeletion(
-                                              prev => [...prev, fields.value[index]]
-                                            )
-                                          }
-                                          fields.remove(index)
-                                        }}
-                                        type='button'
-                                        icon
-                                        negative
-                                      >
-                                        <Icon name='minus' />
-                                      </Button>
-                                    </Table.Cell>
+                                    {
+                                      user_type === 'teller' && formStatus !== 'approved' &&
+                                        <Table.Cell textAlign='center'>
+                                          <Button
+                                            onClick={() => {
+                                              if (fields.value[index].id) {
+                                                setForDeletion(
+                                                  prev => [...prev, fields.value[index]]
+                                                )
+                                              }
+                                              fields.remove(index)
+                                            }}
+                                            type='button'
+                                            icon
+                                            negative
+                                          >
+                                            <Icon name='minus' />
+                                          </Button>
+                                        </Table.Cell>
+                                    }
                                   </Table.Row>
                                 ))
                             }
                           </FieldArray>
                         </Table.Body>
-                        <Table.Footer fullWidth>
-                          <Table.Row>
-                            <Table.HeaderCell
-                              colSpan='4'
-                            >
-                              <div
-                                style={{ display: 'flex', justifyContent: 'flex-end' }}
-                              >
-                                <Button
-                                  type='button'
-                                  secondary
-                                  onClick={() => push('beneficiaries', {})}
+                        {
+                          user_type === 'teller' &&
+                          formStatus !== 'approved' &&
+                            <Table.Footer fullWidth>
+                              <Table.Row>
+                                <Table.HeaderCell
+                                  colSpan='4'
                                 >
-                                  <Icon name='plus' />
-                                  Add Beneficiaries
-                                </Button>
-                              </div>
-                            </Table.HeaderCell>
-                          </Table.Row>
-                        </Table.Footer>
+                                  <div
+                                    style={{ display: 'flex', justifyContent: 'flex-end' }}
+                                  >
+                                    <Button
+                                      type='button'
+                                      secondary
+                                      onClick={() => push('beneficiaries', {})}
+                                    >
+                                      <Icon name='plus' />
+                                      Add Beneficiaries
+                                    </Button>
+                                  </div>
+                                </Table.HeaderCell>
+                              </Table.Row>
+                            </Table.Footer>
+                        }
                       </Table>
                     </Form.Field>
 
@@ -460,6 +493,7 @@ export default ({ history, match }) => {
                                 placeholder='Beneficiary'
                                 component={InputField}
                                 type='number'
+                                readOnly={isReadOnly}
                                 validate={required}
                               />
                             </Form.Field>
@@ -492,29 +526,59 @@ export default ({ history, match }) => {
                         justifyContent: 'flex-end'
                       }}
                       >
-                        <FormSpy>
-                          {
-                            ({ pristine, invalid }) => (
-                              <Fragment>
-                                <Button
-                                  type='submit'
-                                  onClick={() => setFormStatus('draft')}
-                                  disabled={(pristine || invalid)}
-                                >
-                                  Submit For Draft
-                                </Button>
-                                <Button
-                                  type='submit'
-                                  primary
-                                  onClick={() => setFormStatus('pending')}
-                                  disabled={(pristine || invalid)}
-                                >
-                                  Submit For Approval
-                                </Button>
-                              </Fragment>
-                            )
-                          }
-                        </FormSpy>
+                        {
+                          formStatus !== 'approved' &&
+                            <FormSpy>
+                              {
+                                ({ pristine, invalid }) => {
+                                  if (user_type === 'teller') {
+                                    return (
+                                      <Fragment>
+                                        <Button
+                                          type='submit'
+                                          onClick={() => setFormStatus('draft')}
+                                          disabled={(pristine || invalid)}
+                                        >
+                                          Submit For Draft
+                                        </Button>
+                                        <Button
+                                          type='submit'
+                                          primary
+                                          onClick={() => setFormStatus('pending')}
+                                          disabled={(pristine || invalid)}
+                                        >
+                                          Submit For Approval
+                                        </Button>
+                                      </Fragment>
+                                    )
+                                  }
+
+                                  if (user_type === 'approver') {
+                                    return (
+                                      <Fragment>
+                                        <Button
+                                          type='submit'
+                                          negative
+                                          onClick={() => setFormStatus('reject')}
+                                          disabled={(pristine || invalid)}
+                                        >
+                                          Reject Member
+                                        </Button>
+                                        <Button
+                                          type='submit'
+                                          positive
+                                          onClick={() => setFormStatus('approved')}
+                                          disabled={(pristine || invalid)}
+                                        >
+                                          Approve Member
+                                        </Button>
+                                      </Fragment>
+                                    )
+                                  }
+                                }
+                              }
+                            </FormSpy>
+                        }
                       </div>
                     </Form.Field>
                   </Form>

@@ -48,7 +48,15 @@ export default ({ history, match }) => {
             <Grid.Column>
               <Segment>
                 <ul className='block'>
-                  <li className='flex justify-end'>
+                  <li className='flex justify-between items-center'>
+                    <div>
+                      <Label
+                        horizontal
+                        color={(memberInfo?.status === 'approved') ? 'green' : 'gray'}
+                      >
+                        {memberInfo?.status}
+                      </Label>
+                    </div>
                     <Button
                       icon
                       onClick={() => history.push(`/member/${match?.params?.id}`)}
