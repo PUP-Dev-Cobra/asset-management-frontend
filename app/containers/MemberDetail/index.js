@@ -161,7 +161,13 @@ export default ({ history, match }) => {
                           {r?.loan_amount}
                         </List.Content>
                         <List.Content>
-                          <Label horizontal>{r?.status}</Label>
+                          <Label
+                            horizontal
+                            color={r?.status === 'approved' && 'green'}
+                            className='w-20'
+                          >
+                            {r?.status}
+                          </Label>
                           {dayjs(r?.created_at).format('lll')}
                         </List.Content>
                       </List.Item>

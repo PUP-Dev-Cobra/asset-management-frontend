@@ -4,12 +4,14 @@ import {
   Form,
   Grid,
   Header,
-  Segment
+  Segment,
+  Label
 } from 'semantic-ui-react'
 import { Form as ReactFinalForm, Field, FormSpy } from 'react-final-form'
 import { useAsync } from 'react-async'
 import get from 'lodash/get'
 
+import { userInfo } from 'Helpers/utils'
 import { composeValidators, useFetchAsyncOptions } from 'App/utils'
 import { InputField, SelectField } from 'Components/InputFields'
 import { required } from 'App/validations'
@@ -64,6 +66,7 @@ const useOptionAsync = (optionName) => {
 }
 
 export default ({ history, match }) => {
+  const { user_type } = userInfo()
   const uuid = get(match, 'params.id')
 
   const [initialValues, setInitialValues] = useState({})
@@ -71,6 +74,7 @@ export default ({ history, match }) => {
   const [memberSelection, setMemberSelection] = useState([])
   const [paymentTermSelection, setPaymentTermSelection] = useState([])
   const [reciepts, setReciepts] = useState([])
+  const [loanStatus, setLoanStatus] = useState(null)
 
   const [serviceCharge, setServiceCharge] = useState(0)
   const [interestCharge, setInterestCharge] = useState(0)
@@ -92,6 +96,7 @@ export default ({ history, match }) => {
   const memberListAsync = useAsync({ promiseFn: memberList })
 
   const paymentTermAsync = useOptionAsync('payment_term')
+  const isReadOnly = (user_type === 'approver' || loanStatus === 'approved')
   let fetchMemberAsync = {}
 
   if (uuid) {
@@ -114,7 +119,8 @@ export default ({ history, match }) => {
           member,
           payment_term,
           service_charge,
-          reciepts
+          reciepts,
+          status
         } = fetchMemberAsync?.data?.response
 
         setCapitalBuildCharge(capital_build_up)
@@ -123,6 +129,7 @@ export default ({ history, match }) => {
         setReciepts(reciepts)
         setCurrentPaymentTerm(reciepts.length + 1)
         setMaxPaymentTerm(payment_term)
+        setLoanStatus(status)
 
         fetchMemberSharesAsync.run({ uuid: member.uuid })
         setDisbursmentValues({ ...disbursment })
@@ -160,18 +167,23 @@ export default ({ history, match }) => {
     : useAsync({ deferFn: createAsync })
 
   const onSubmitHandle = values => {
-    const newValues = {
-      ...values,
-      service_charge: serviceCharge,
-      interest: interestCharge,
-      capital_build_up: capitalBuildCharge,
-      share_amount: shareAmount,
-      status: 'draft'
+    let newValues = {}
+
+    if (user_type === 'teller') {
+      newValues = {
+        ...values,
+        service_charge: serviceCharge,
+        interest: interestCharge,
+        capital_build_up: capitalBuildCharge,
+        share_amount: shareAmount
+      }
     }
+    newValues.status = loanStatus
 
     if (uuid) {
       newValues.uuid = uuid
     }
+    console.log('<<>>', loanStatus)
     formAsync.run(newValues)
   }
 
@@ -217,9 +229,7 @@ export default ({ history, match }) => {
 
   useEffect(() => {
     setTotalLoanableShares(
-      memberShareValue +
-      coMaker1ShareValue +
-      coMaker2ShareValue
+      memberShareValue + coMaker1ShareValue + coMaker2ShareValue
     )
   },
   [
@@ -254,16 +264,21 @@ export default ({ history, match }) => {
         setTotalPaymentLoan,
         totalLoanableShares,
         totalPaymentLoan,
+        user_type,
         uuid
       }}
     >
       <Grid centered padded='vertically' container>
         {
           uuid &&
+          user_type === 'teller' &&
+          loanStatus === 'approved' &&
             <ActionnRow />
         }
         {
           reciepts.length > 0 &&
+          user_type === 'teller' &&
+          loanStatus === 'approved' &&
             <RecieptTable />
         }
         <Grid.Row>
@@ -288,14 +303,19 @@ export default ({ history, match }) => {
                         <Grid>
                           <Grid.Row>
                             <Grid.Column computer={10}>
-                              {
-                                uuid &&
-                                  <Header as='h3'>Loan Information</Header>
-                              }
-                              {
-                                !uuid &&
-                                  <Header as='h3'>Create Loan</Header>
-                              }
+                              <div className='flex justify-between items-center'>
+                                {
+                                  uuid &&
+                                    <Header as='h3'>Loan Information</Header>
+                                }
+                                {
+                                  !uuid &&
+                                    <Header as='h3'>Create Loan</Header>
+                                }
+                                <div>
+                                  <Label color={(loanStatus === 'approved' && 'green')} horizontal>{loanStatus ?? 'draft'}</Label>
+                                </div>
+                              </div>
                               <Form.Field>
                                 <label>Member</label>
                                 <Field
@@ -304,6 +324,7 @@ export default ({ history, match }) => {
                                   name='member_id'
                                   onChangeCb={onChangeLoanMember}
                                   placeholder='Member'
+                                  disabled={isReadOnly}
                                   options={
                                     memberSelection
                                       .filter(v => {
@@ -332,6 +353,7 @@ export default ({ history, match }) => {
                                           component={SelectField}
                                           onChangeCb={onChangeLoanCoMaker1}
                                           loading={memberListAsync.isPending}
+                                          disabled={isReadOnly}
                                           options={
                                             memberSelection
                                               .filter(v => {
@@ -356,6 +378,7 @@ export default ({ history, match }) => {
                                           component={SelectField}
                                           onChangeCb={onChangeLoanCoMaker2}
                                           loading={memberListAsync.isPending}
+                                          disabled={isReadOnly}
                                           options={
                                             memberSelection
                                               .filter(v => {
@@ -376,8 +399,9 @@ export default ({ history, match }) => {
                                           component={InputField}
                                           name='loan_amount'
                                           placeholder='Loan Amount'
+                                          readOnly={isReadOnly}
                                           validate={
-                                            composeValidators(loanAllowed(totalLoanableShares))
+                                            (user_type === 'teller') && composeValidators(loanAllowed(totalLoanableShares))
                                           }
                                         />
                                       </Form.Field>
@@ -387,9 +411,10 @@ export default ({ history, match }) => {
                                           <label>Payment Term</label>
                                           <Field
                                             component={SelectField}
-                                            options={paymentTermSelection}
                                             name='payment_term'
+                                            options={paymentTermSelection}
                                             placeholder='payment_term'
+                                            disabled={isReadOnly}
                                             validate={required}
                                           />
                                         </Form.Field>
@@ -400,8 +425,9 @@ export default ({ history, match }) => {
                                             component={InputField}
                                             name='loan_payment_start_date'
                                             placeholder='Payment Start Date'
-                                            validate={required}
+                                            readOnly={isReadOnly}
                                             type='date'
+                                            validate={required}
                                           />
                                         </Form.Field>
                                       </Form.Group>
@@ -416,35 +442,74 @@ export default ({ history, match }) => {
                           <Grid.Row>
                             <Grid.Column stretched>
                               <div className='flex justify-between'>
-                                <Button
-                                  disabled={Boolean(uuid)}
-                                  secondary
-                                  type='button'
-                                  onClick={() => {
-                                    setMemberShareValue(0)
-                                    setCoMaker1ShareValue(0)
-                                    setCoMaker2ShareValue(0)
-                                    form.reset()
-                                  }}
-                                >
-                                  Reset
-                                </Button>
-                                <FormSpy subscription={{
-                                  invalid: true,
-                                  pristine: true
-                                }}
-                                >
-                                  {
-                                    ({ invalid, pristine }) => (
+                                {
+                                  loanStatus !== 'approved' &&
+                                    <Fragment>
                                       <Button
-                                        type='submit'
-                                        disabled={(invalid || pristine)} color='green'
+                                        disabled={Boolean(uuid) || user_type === 'approver'}
+                                        secondary
+                                        type='button'
+                                        onClick={() => {
+                                          setMemberShareValue(0)
+                                          setCoMaker1ShareValue(0)
+                                          setCoMaker2ShareValue(0)
+                                          form.reset()
+                                        }}
                                       >
-                                        For Approval
+                                      Reset
                                       </Button>
-                                    )
-                                  }
-                                </FormSpy>
+                                      <FormSpy subscription={{
+                                        invalid: true,
+                                        pristine: true
+                                      }}
+                                      >
+                                        {
+                                          ({ invalid, pristine }) => {
+                                            if (user_type === 'teller') {
+                                              return (
+                                                <Button
+                                                  type='submit'
+                                                  onClick={() => {
+                                                    setLoanStatus('pending')
+                                                    setTimeout(form.submit, 100)
+                                                  }}
+                                                  disabled={(invalid || pristine)} color='green'
+                                                >
+                                                  For Approval
+                                                </Button>
+                                              )
+                                            }
+                                            if (user_type === 'approver') {
+                                              return (
+                                                <div className='flex'>
+                                                  <Button
+                                                    negative
+                                                    onClick={() => {
+                                                      setLoanStatus('rejected')
+                                                      setTimeout(form.submit, 100)
+                                                    }}
+                                                    type='submit'
+                                                  >
+                                                    Reject Loan
+                                                  </Button>
+                                                  <Button
+                                                    positive
+                                                    onClick={() => {
+                                                      setLoanStatus('approved')
+                                                      setTimeout(form.submit, 100)
+                                                    }}
+                                                    type='submit'
+                                                  >
+                                                    Approve Loan
+                                                  </Button>
+                                                </div>
+                                              )
+                                            }
+                                          }
+                                        }
+                                      </FormSpy>
+                                    </Fragment>
+                                }
                               </div>
                             </Grid.Column>
                           </Grid.Row>

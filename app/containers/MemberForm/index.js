@@ -173,7 +173,7 @@ export default ({ history, match }) => {
             }}
           >
             {
-              ({ form: { mutators: { push } }, handleSubmit }) => {
+              ({ form: { mutators: { push }, submit }, handleSubmit }) => {
                 return (
                   <Form
                     onSubmit={handleSubmit}
@@ -536,15 +536,11 @@ export default ({ history, match }) => {
                                       <Fragment>
                                         <Button
                                           type='submit'
-                                          onClick={() => setFormStatus('draft')}
-                                          disabled={(pristine || invalid)}
-                                        >
-                                          Submit For Draft
-                                        </Button>
-                                        <Button
-                                          type='submit'
                                           primary
-                                          onClick={() => setFormStatus('pending')}
+                                          onClick={() => {
+                                            setFormStatus('pending')
+                                            setTimeout(submit, 100)
+                                          }}
                                           disabled={(pristine || invalid)}
                                         >
                                           Submit For Approval
@@ -559,7 +555,10 @@ export default ({ history, match }) => {
                                         <Button
                                           type='submit'
                                           negative
-                                          onClick={() => setFormStatus('reject')}
+                                          onClick={() => {
+                                            setFormStatus('reject')
+                                            setTimeout(submit, 100)
+                                          }}
                                           disabled={(pristine || invalid)}
                                         >
                                           Reject Member
@@ -567,7 +566,10 @@ export default ({ history, match }) => {
                                         <Button
                                           type='submit'
                                           positive
-                                          onClick={() => setFormStatus('approved')}
+                                          onClick={() => {
+                                            setFormStatus('approved')
+                                            setTimeout(submit, 100)
+                                          }}
                                           disabled={(pristine || invalid)}
                                         >
                                           Approve Member
