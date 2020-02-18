@@ -6,6 +6,6 @@ services:
       context: .
       dockerfile: ./.docker/Dockerfile
     ports:
-      - 3101:3100
+      - 3101:8080
 
     
