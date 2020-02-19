@@ -11,12 +11,14 @@ import {
 import { useAsync } from 'react-async'
 import dayjs from 'dayjs'
 
+import { userInfo } from 'Helpers/utils'
 import { fetchMember } from 'Containers/MemberForm/async'
 import { fetchRecieptAsync } from './async'
 
 export default ({ history, match }) => {
   const [memberInfo, setMemberInfo] = useState({})
   const [recieptList, setRecieptList] = useState([])
+  const { user_type } = userInfo()
 
   const fetchMemberQuery = useAsync({
     promiseFn: fetchMember,
@@ -48,21 +50,24 @@ export default ({ history, match }) => {
             <Grid.Column>
               <Segment>
                 <ul className='block'>
-                  <li className='flex justify-between items-center'>
+                  <li className='flex justify-between items-center my-5'>
                     <div>
                       <Label
                         horizontal
-                        color={(memberInfo?.status === 'approved') ? 'green' : 'gray'}
+                        color={(memberInfo?.status === 'approved') ? 'green' : 'grey'}
                       >
                         {memberInfo?.status}
                       </Label>
                     </div>
-                    <Button
-                      icon
-                      onClick={() => history.push(`/member/${match?.params?.id}`)}
-                    >
-                      <Icon name='edit' />
-                    </Button>
+                    {
+                      user_type !== 'member' &&
+                        <Button
+                          icon
+                          onClick={() => history.push(`/member/${match?.params?.id}`)}
+                        >
+                          <Icon name='edit' />
+                        </Button>
+                    }
                   </li>
                   <li>
                     <dl className='flex text-lg'>
@@ -156,7 +161,7 @@ export default ({ history, match }) => {
                 <List divided verticalAlign='middle' selection>
                   {
                     memberInfo?.loans?.map(r => (
-                      <List.Item key={r.uuid}>
+                      <List.Item key={r.uuid} onClick={() => history.push(`/loan/${r.uuid}`)}>
                         <List.Content floated='right'>
                           {r?.loan_amount}
                         </List.Content>

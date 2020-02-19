@@ -1,6 +1,6 @@
 import React, { lazy, useEffect } from 'react'
 import { Switch } from 'react-router-dom'
-import { Menu, Button, Image, Dropdown } from 'semantic-ui-react'
+import { Menu, Button, Image, Dropdown, Icon } from 'semantic-ui-react'
 
 import RouteWithSubroutes from 'Components/RouteWithSubRoutes'
 
@@ -12,7 +12,7 @@ const LoadLedgerDashboard = lazy(() => import('Containers/Ledger'
 ))
 
 const DashboardRoot = props => {
-  const { user_type } = userInfo()
+  const { user_type, email } = userInfo()
   const { match, routes, history, location } = props
   const { isExact } = match
 
@@ -92,7 +92,11 @@ const DashboardRoot = props => {
           }
           <Menu.Menu position='right'>
             {
-              showButton && user_type === 'teller' &&
+              showButton &&
+              (
+                user_type === 'teller' ||
+                user_type === 'admin'
+              ) &&
                 <Menu.Item>
                   <Button primary onClick={() => history.push(redirect)}>
                     Create
@@ -100,7 +104,23 @@ const DashboardRoot = props => {
                 </Menu.Item>
             }
             <Menu.Item>
-              <Dropdown text='Profile' simple>
+              <Dropdown
+                icon={null}
+                trigger={
+                  <div className='flex items-center'>
+                    <div className='flex items-center'>
+                      <Icon name='user circle' size='big' />
+                    </div>
+                    <ul className='flex flex-col list-none p-0 m-0'>
+                      <li>{email}</li>
+                      <li>{user_type}</li>
+                    </ul>
+                    <div>
+                      <Icon name='dropdown' />
+                    </div>
+                  </div>
+                }
+              >
                 <Dropdown.Menu>
                   <Dropdown.Item key={0}>
                     Account Profile

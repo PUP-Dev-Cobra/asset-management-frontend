@@ -66,6 +66,7 @@ const useOptionAsync = (optionName) => {
 }
 
 export default ({ history, match }) => {
+  console.log('<><><>')
   const { user_type } = userInfo()
   const uuid = get(match, 'params.id')
 
@@ -183,7 +184,6 @@ export default ({ history, match }) => {
     if (uuid) {
       newValues.uuid = uuid
     }
-    console.log('<<>>', loanStatus)
     formAsync.run(newValues)
   }
 
@@ -277,7 +277,7 @@ export default ({ history, match }) => {
         }
         {
           reciepts.length > 0 &&
-          user_type === 'teller' &&
+          (user_type === 'teller' || user_type === 'member') &&
           loanStatus === 'approved' &&
             <RecieptTable />
         }
@@ -313,7 +313,12 @@ export default ({ history, match }) => {
                                     <Header as='h3'>Create Loan</Header>
                                 }
                                 <div>
-                                  <Label color={(loanStatus === 'approved' && 'green')} horizontal>{loanStatus ?? 'draft'}</Label>
+                                  <Label
+                                    color={loanStatus === 'approved' && 'green'}
+                                    horizontal
+                                  >
+                                    {loanStatus ?? 'draft'}
+                                  </Label>
                                 </div>
                               </div>
                               <Form.Field>
@@ -443,7 +448,7 @@ export default ({ history, match }) => {
                             <Grid.Column stretched>
                               <div className='flex justify-between'>
                                 {
-                                  loanStatus !== 'approved' &&
+                                  loanStatus !== 'approved' && user_type !== 'member' &&
                                     <Fragment>
                                       <Button
                                         disabled={Boolean(uuid) || user_type === 'approver'}
@@ -473,7 +478,8 @@ export default ({ history, match }) => {
                                                     setLoanStatus('pending')
                                                     setTimeout(form.submit, 100)
                                                   }}
-                                                  disabled={(invalid || pristine)} color='green'
+                                                  disabled={(invalid || pristine)}
+                                                  color='green'
                                                 >
                                                   For Approval
                                                 </Button>
