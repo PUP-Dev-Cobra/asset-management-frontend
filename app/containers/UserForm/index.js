@@ -2,16 +2,45 @@ import React, { Fragment, useEffect, useState } from 'react'
 import { Grid, Segment, Header, Button, Form, Message } from 'semantic-ui-react'
 import { Form as ReactFinalForm, Field, FormSpy } from 'react-final-form'
 import { useAsync } from 'react-async'
-import get from 'lodash/get'
 
-import { InputField } from 'Components/InputFields'
+import { InputField, SelectField } from 'Components/InputFields'
 import { email, required, isMatchPassword } from 'App/validations'
 import { composeValidators } from 'App/utils'
 
-import { option, create, update, get as asyncGet } from './async'
+import { option, create, update, get as asyncGet, memberList as memberListAsync } from './async'
+
+const MemberSelection = ({ userType }) => {
+  const memberList = useAsync({
+    promiseFn: memberListAsync
+  })
+
+  return (
+    <Form.Field>
+      <label>Member</label>
+      <Field
+        name='member_id'
+        component={SelectField}
+        validate={
+          composeValidators(required)
+        }
+        options={
+          memberList
+            ?.data
+            ?.response
+            ?.map(i =>
+              ({
+                text: `${i.last_name}, ${i.first_name}, ${(i.middle_name) ?? ''}`,
+                value: i.uuid
+              })
+            ) ?? []
+        }
+      />
+    </Form.Field>
+  )
+}
 
 export default ({ history, match }) => {
-  const uuid = get(match, 'params.id')
+  const uuid = match?.params?.id
   const [initValues, setInitvalues] = useState({})
   const [overridePassword, setOverridePassword] = useState(!uuid || false)
   const formAsyncCb = uuid ? update : create
@@ -30,8 +59,8 @@ export default ({ history, match }) => {
     deferFn: formAsyncCb
   })
 
-  const userTypes = get(optionsUserType, 'data.response') || []
-  const userStatus = get(optionsUserStatus, 'data.response') || []
+  const userTypes = optionsUserType?.data?.response ?? []
+  const userStatus = optionsUserStatus?.data?.response ?? []
 
   const onSubmit = values => {
     const { re_password, ...rest } = values
@@ -49,7 +78,7 @@ export default ({ history, match }) => {
   }, [formAsync.finishedAt])
 
   useEffect(() => {
-    const data = get(userData, 'data.response')
+    const data = userData?.data?.response
     setInitvalues(data)
   }, [userData.data])
 
@@ -138,63 +167,27 @@ export default ({ history, match }) => {
                         <label>Status</label>
                         <Field
                           name='status'
+                          component={SelectField}
+                          options={userStatus.map(
+                            v => ({ text: v.option_value, value: v.option_value })
+                          )}
                           validate={
                             composeValidators(required)
                           }
-                        >
-                          {
-                            ({ input, meta, ...props }) => (
-                              <Form.Select
-                                as='select'
-                                options={userStatus}
-                                {...input}
-                              >
-                                <option />
-                                {
-                                  userStatus.map((o, i) => (
-                                    <option
-                                      value={o.option_value}
-                                      key={i}
-                                    >
-                                      {o.option_value}
-                                    </option>
-                                  ))
-                                }
-                              </Form.Select>
-                            )
-                          }
-                        </Field>
+                        />
                       </Form.Field>
                       <Form.Field>
                         <label>User Type</label>
                         <Field
                           name='user_type'
+                          component={SelectField}
+                          options={userTypes.map(
+                            v => ({ text: v.option_value, value: v.option_value })
+                          )}
                           validate={
                             composeValidators(required)
                           }
-                        >
-                          {
-                            ({ input, meta, ...props }) => (
-                              <Form.Select
-                                {...input}
-                                as='select'
-                                options={userTypes}
-                              >
-                                <option />
-                                {
-                                  userTypes.map((o, i) => (
-                                    <option
-                                      value={o.option_value}
-                                      key={i}
-                                    >
-                                      {o.option_value}
-                                    </option>
-                                  ))
-                                }
-                              </Form.Select>
-                            )
-                          }
-                        </Field>
+                        />
                       </Form.Field>
                       <FormSpy subscription={{
                         values: { user_type: true }
@@ -202,26 +195,12 @@ export default ({ history, match }) => {
                       >
                         {
                           ({ values }) => {
-                            const user_type = get(values, 'user_type')
+                            const user_type = values?.user_type
                             if (user_type === 'member') {
                               return (
-                                <Form.Field>
-                                  <label>Member</label>
-                                  <Form.Select
-                                    as='select'
-                                  >
-                                    {
-                                      [].map((o, i) => (
-                                        <option
-                                          value={o.option_value}
-                                          key={i}
-                                        >
-                                          {o.option_value}
-                                        </option>
-                                      ))
-                                    }
-                                  </Form.Select>
-                                </Form.Field>
+                                <MemberSelection
+                                  userType={user_type}
+                                />
                               )
                             }
                             return <Fragment />
@@ -231,10 +210,7 @@ export default ({ history, match }) => {
                     </Form.Group>
                     <Form.Group
                       width='equal'
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'flex-end'
-                      }}
+                      className='flex justify-end'
                     >
                       <Form.Field>
                         <FormSpy
@@ -247,7 +223,7 @@ export default ({ history, match }) => {
                                   disabled={invalid || pristine}
                                   primary
                                 >
-                                Submit
+                                  Submit
                                 </Button>
                               )
                             }

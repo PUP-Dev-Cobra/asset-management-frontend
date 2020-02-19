@@ -27,15 +27,16 @@ const LoginForm = ({ history }) => {
     if (data) {
       localStorage.setItem('jwt_token', data.token)
       const dataToken = data.token.split('.')
-      const { user_type } = JSON.parse(atob(dataToken[1]))
+      const { user_type, member_id } = JSON.parse(atob(dataToken[1]))
 
       localStorage.setItem('user_type', user_type)
+      localStorage.setItem('member_id', member_id)
       switch (user_type) {
         case 'admin':
           location.href = '/user/list'
           break
         case 'member':
-          location.href = '/member/detail'
+          location.href = `/member/detail/${member_id}`
           break
         case 'approver':
           location.href = '/loan/list'
