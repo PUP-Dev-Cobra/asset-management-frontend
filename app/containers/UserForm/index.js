@@ -31,7 +31,7 @@ const MemberSelection = ({ userType }) => {
             ?.map(i =>
               ({
                 text: `${i.last_name}, ${i.first_name}, ${(i.middle_name) ?? ''}`,
-                value: i.uuid
+                value: i.id
               })
             ) ?? []
         }
