@@ -79,7 +79,7 @@ const DashboardRoot = props => {
               </Menu.Item>
           }
           {
-            (user_type === 'teller' || user_type === 'approver') &&
+            (user_type === 'teller') &&
               <Menu.Item active={match.path === '/ledger'} link onClick={() => history.push('/ledger')}>
               Ledger
               </Menu.Item>
