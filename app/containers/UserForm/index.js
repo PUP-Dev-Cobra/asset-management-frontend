@@ -2,6 +2,7 @@ import React, { Fragment, useEffect, useState } from 'react'
 import { Grid, Segment, Header, Button, Form, Message } from 'semantic-ui-react'
 import { Form as ReactFinalForm, Field, FormSpy } from 'react-final-form'
 import { useAsync } from 'react-async'
+import { toast } from 'react-toastify'
 
 import { InputField, SelectField } from 'Components/InputFields'
 import { email, required, isMatchPassword } from 'App/validations'
@@ -73,7 +74,11 @@ export default ({ history, match }) => {
   useEffect(() => {
     const { error, finishedAt } = formAsync
     if (!error && finishedAt) {
-      history.push('/user/list')
+      console.log(formAsync?.data?.response, 'asd')
+      const uuidRaw = (uuid) || formAsync?.data?.response
+      const action = (uuidRaw) ? 'Update' : 'Created'
+      toast.success(`${action} successfully`)
+      history.push(`/user/list?last_update=${uuidRaw}`)
     }
   }, [formAsync.finishedAt])
 
