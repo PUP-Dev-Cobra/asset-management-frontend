@@ -9,6 +9,7 @@ import {
 } from 'semantic-ui-react'
 import { Form as ReactFinalForm, Field, FormSpy } from 'react-final-form'
 import { useAsync } from 'react-async'
+import { toast } from 'react-toastify'
 import get from 'lodash/get'
 
 import { userInfo } from 'Helpers/utils'
@@ -66,9 +67,8 @@ const useOptionAsync = (optionName) => {
 }
 
 export default ({ history, match }) => {
-  console.log('<><><>')
   const { user_type } = userInfo()
-  const uuid = get(match, 'params.id')
+  const uuid = match?.params?.id
 
   const [initialValues, setInitialValues] = useState({})
   const [disbursmentValues, setDisbursmentValues] = useState({})
@@ -240,7 +240,15 @@ export default ({ history, match }) => {
 
   useEffect(() => {
     if (formAsync.isResolved) {
-      history.push('/loan/list')
+      const uuidRaw = (uuid) || formAsync?.data?.response
+      const action = (uuidRaw) ? 'Update' : 'Created'
+      toast.success(`${action} successfully`)
+
+      history.push(`/loan/list?last_update=${uuidRaw}`)
+    }
+
+    if (formAsync.error) {
+      toast.error(formAsync.error)
     }
   }, [formAsync.isResolved])
 

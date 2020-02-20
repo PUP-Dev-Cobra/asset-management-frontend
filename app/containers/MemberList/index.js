@@ -9,7 +9,7 @@ import {
   Loader,
   Select
 } from 'semantic-ui-react'
-import get from 'lodash/get'
+import qs from 'query-string'
 import { useAsync } from 'react-async'
 import dayjs from 'dayjs'
 
@@ -17,10 +17,12 @@ import { userInfo } from 'Helpers/utils'
 
 import { memberListAsync } from './async'
 
-export default ({ history }) => {
+export default ({ history, location }) => {
   const { user_type } = userInfo()
   const { data, error, isPending } = useAsync({ promiseFn: memberListAsync })
-  const memberList = get(data, 'response') || []
+  const params = qs.parse(location?.search)
+
+  const memberList = data?.response ?? []
 
   return (
     <Grid centered container padded='vertically'>
@@ -68,7 +70,7 @@ export default ({ history }) => {
             }
             <Grid.Row>
               <Grid.Column>
-                <Table celled selectable>
+                <Table celled selectable size='small'>
                   <Table.Header>
                     <Table.Row>
                       <Table.HeaderCell>Member Name</Table.HeaderCell>
@@ -76,6 +78,8 @@ export default ({ history }) => {
                       <Table.HeaderCell>Address</Table.HeaderCell>
                       <Table.HeaderCell>Contact No</Table.HeaderCell>
                       <Table.HeaderCell>Status</Table.HeaderCell>
+                      <Table.HeaderCell>Created At</Table.HeaderCell>
+                      <Table.HeaderCell>Updated At</Table.HeaderCell>
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
@@ -89,6 +93,7 @@ export default ({ history }) => {
                         }
                         return (
                           <Table.Row
+                            active={r.uuid === params.last_update}
                             key={r.uuid}
                             onClick={() => history.push(redirect)}
                           >
@@ -121,16 +126,35 @@ export default ({ history }) => {
                               }
                             </Table.Cell>
                             <Table.Cell
-                              negative={r.status === 'pending'}
+                              negative={r.status === 'pending' || r.status === 'reject'}
                               positive={r.status === 'approved'}
                             >
                               {r.status}
+                            </Table.Cell>
+                            <Table.Cell>
+                              {dayjs(r.created_at).format('LLL')}
+                            </Table.Cell>
+                            <Table.Cell>
+                              {(r.updated_at) ? dayjs(r.updated_at).format('LLL') : 'N/A'}
                             </Table.Cell>
                           </Table.Row>
                         )
                       })
                     }
                   </Table.Body>
+
+                  <Table.Footer>
+                    <Table.Row>
+                      <Table.HeaderCell
+                        colSpan={6}
+                      >
+                        Total Members
+                      </Table.HeaderCell>
+                      <Table.HeaderCell>
+                        {memberList?.length}
+                      </Table.HeaderCell>
+                    </Table.Row>
+                  </Table.Footer>
                 </Table>
               </Grid.Column>
             </Grid.Row>

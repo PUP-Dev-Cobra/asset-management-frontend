@@ -7,14 +7,16 @@ import {
   Dimmer,
   Loader
 } from 'semantic-ui-react'
+import qs from 'query-string'
+import dayjs from 'dayjs'
 import { useAsync } from 'react-async'
-import get from 'lodash/get'
 
 import { list as loanListAsync } from './async'
 
-export default ({ history }) => {
+export default ({ history, location }) => {
   const loanListFetch = useAsync({ promiseFn: loanListAsync })
-  const loanList = get(loanListFetch, 'data.response') || []
+  const loanList = loanListFetch?.data?.response ?? []
+  const params = qs.parse(location?.search)
 
   return (
     <Grid centered container padded='vertically'>
@@ -47,6 +49,8 @@ export default ({ history }) => {
                     <Table.HeaderCell>Remaining</Table.HeaderCell>
                     <Table.HeaderCell>Status</Table.HeaderCell>
                     <Table.HeaderCell>Payment Start Date</Table.HeaderCell>
+                    <Table.HeaderCell>Created Date</Table.HeaderCell>
+                    <Table.HeaderCell>Updated Date</Table.HeaderCell>
                   </Table.Row>
                 </Table.Header>
 
@@ -56,6 +60,7 @@ export default ({ history }) => {
                       return (
                         <Table.Row
                           key={r.uuid}
+                          active={params.last_update === r.uuid}
                           onClick={() => history.push(`/loan/${r.uuid}`)}
                         >
                           <Table.Cell>
@@ -71,7 +76,7 @@ export default ({ history }) => {
                             }
                           </Table.Cell>
                           <Table.Cell>
-                            {`${r.member.dob}`}
+                            {`${dayjs(r.member.dob).format('LL')}`}
                           </Table.Cell>
                           <Table.Cell>
                             {`${r.loan_amount.toLocaleString()}`}
@@ -86,11 +91,28 @@ export default ({ history }) => {
                           <Table.Cell>
                             {`${r.loan_payment_start_date}`}
                           </Table.Cell>
+                          <Table.Cell>
+                            {dayjs(r.created_at).format('LLL')}
+                          </Table.Cell>
+                          <Table.Cell>
+                            {r.updated_at ? dayjs(r.updated_at).format('LLL') : 'N/A'}
+                          </Table.Cell>
                         </Table.Row>
                       )
                     })
                   }
                 </Table.Body>
+
+                <Table.Footer>
+                  <Table.Row>
+                    <Table.HeaderCell colSpan={7}>
+                        Total Loans
+                    </Table.HeaderCell>
+                    <Table.HeaderCell>
+                      {loanList?.length}
+                    </Table.HeaderCell>
+                  </Table.Row>
+                </Table.Footer>
 
               </Table>
             </Grid.Column>

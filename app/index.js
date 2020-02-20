@@ -5,6 +5,7 @@ import { hot } from 'react-hot-loader'
 import ReactDOM from 'react-dom'
 import LocalizedFormat from 'dayjs/plugin/localizedFormat'
 import dayjs from 'dayjs'
+import { ToastContainer } from 'react-toastify'
 
 import RouteWithSubroutes from 'Components/RouteWithSubRoutes'
 import routes from './routes'
@@ -25,6 +26,7 @@ const App = () => {
             )
           }
         </Switch>
+        <ToastContainer />
       </Suspense>
     </Router>
   )
