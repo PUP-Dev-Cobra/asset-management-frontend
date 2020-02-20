@@ -26,7 +26,7 @@ export default ({ history, location }) => {
 
   return (
     <Grid centered container padded='vertically'>
-      <Grid.Column computer='13'>
+      <Grid.Column computer={13}>
         <Segment stacked>
           <Dimmer active={isPending} inverted>
             <Loader />
@@ -115,11 +115,9 @@ export default ({ history, location }) => {
 
                   <Table.Footer>
                     <Table.Row>
-                      <Table.HeaderCell>Total Members</Table.HeaderCell>
-                      <Table.HeaderCell />
-                      <Table.HeaderCell />
-                      <Table.HeaderCell />
-                      <Table.HeaderCell />
+                      <Table.HeaderCell colSpan={5}>
+                        Total Users
+                      </Table.HeaderCell>
                       <Table.HeaderCell>
                         {userList?.length}
                       </Table.HeaderCell>

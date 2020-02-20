@@ -9,10 +9,11 @@ import {
   Segment,
   Table
 } from 'semantic-ui-react'
-import arrayMutators from 'final-form-arrays'
 import { Form as ReactFinalForm, FormSpy, Field } from 'react-final-form'
 import { FieldArray } from 'react-final-form-arrays'
 import { useAsync } from 'react-async'
+import { toast } from 'react-toastify'
+import arrayMutators from 'final-form-arrays'
 import dayjs from 'dayjs'
 import createDecorator from 'final-form-calculate'
 
@@ -111,10 +112,18 @@ export default ({ history, match }) => {
   useEffect(
     () => {
       if (onSubmitAsync.isFulfilled) {
-        history.push('/member/list')
+        const uuidRaw = (uuid) || onSubmitAsync?.data?.response
+        const action = (uuidRaw) ? 'Update' : 'Created'
+        toast.success(`${action} successfully`)
+
+        history.push(`/member/list?last_update=${uuidRaw}`)
+      }
+
+      if (onSubmitAsync.error) {
+        toast.error(onSubmitAsync.error)
       }
     },
-    [onSubmitAsync.isFulfilled]
+    [onSubmitAsync.isFulfilled, onSubmitAsync.error]
   )
 
   useEffect(
@@ -142,7 +151,7 @@ export default ({ history, match }) => {
         })
       }
     },
-    [sharePerAmountOptionAsync.data]
+    [sharePerAmountOptionAsync?.data]
   )
 
   return (
@@ -405,7 +414,7 @@ export default ({ history, match }) => {
                                       />
                                       <Field
                                         name={`${name}.last_name`}
-                                        placeholder='Middle Name'
+                                        placeholder='Last Name'
                                         readOnly={isReadOnly}
                                         component={InputField}
                                       />
@@ -413,7 +422,7 @@ export default ({ history, match }) => {
                                     <Table.Cell>
                                       <Field
                                         name={`${name}.relationship`}
-                                        placeholder='Beneficiary'
+                                        placeholder='Relationship'
                                         component={InputField}
                                         readOnly={isReadOnly}
                                         validate={required}
@@ -422,7 +431,7 @@ export default ({ history, match }) => {
                                     <Table.Cell>
                                       <Field
                                         name={`${name}.dob`}
-                                        placeholder='Beneficiary'
+                                        placeholder='Date of Birth'
                                         component={InputField}
                                         validate={required}
                                         readOnly={isReadOnly}
@@ -490,7 +499,7 @@ export default ({ history, match }) => {
                               <label>Share Purchase</label>
                               <Field
                                 name='share.share_count'
-                                placeholder='Beneficiary'
+                                placeholder='Share Purchase'
                                 component={InputField}
                                 type='number'
                                 readOnly={isReadOnly}
@@ -502,7 +511,7 @@ export default ({ history, match }) => {
                               <Field
                                 name='share.share_per_amount'
                                 readOnly
-                                placeholder='Beneficiary'
+                                placeholder='Share Per Amount'
                                 component={InputField}
                               />
                             </Form.Field>
@@ -511,7 +520,7 @@ export default ({ history, match }) => {
                               <Field
                                 name='share.total_share_amount'
                                 readOnly
-                                placeholder='Beneficiary'
+                                placeholder='Total Amount'
                                 component={InputField}
                               />
                             </Form.Field>

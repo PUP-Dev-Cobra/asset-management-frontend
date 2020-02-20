@@ -74,11 +74,14 @@ export default ({ history, match }) => {
   useEffect(() => {
     const { error, finishedAt } = formAsync
     if (!error && finishedAt) {
-      console.log(formAsync?.data?.response, 'asd')
       const uuidRaw = (uuid) || formAsync?.data?.response
       const action = (uuidRaw) ? 'Update' : 'Created'
       toast.success(`${action} successfully`)
       history.push(`/user/list?last_update=${uuidRaw}`)
+    }
+
+    if (error) {
+      toast.error(error)
     }
   }, [formAsync.finishedAt])
 
