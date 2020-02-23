@@ -8,6 +8,7 @@ import {
   Message,
   Image
 } from 'semantic-ui-react'
+import { Link } from 'react-router-dom'
 import { useAsync } from 'react-async'
 import { Form as ReactForm, Field } from 'react-final-form'
 
@@ -48,8 +49,8 @@ const LoginForm = ({ history }) => {
   }, [data])
 
   return (
-    <Grid textAlign='center' style={{ height: '90vh' }} verticalAlign='middle' relaxed='very' stackable>
-      <Grid.Column style={{ maxWidth: 450 }}>
+    <Grid textAlign='center' className='h-screen' verticalAlign='middle' relaxed='very' stackable>
+      <Grid.Column className='max-w-lg w-full'>
         <Header as='h2' color='teal' textAlign='center'>
           <Image src={logoImg} /> Login to your Account
         </Header>
@@ -93,6 +94,9 @@ const LoginForm = ({ history }) => {
                   <Button primary type='submit'>
                     Login
                   </Button>
+                  <div className='py-2 flex justify-end'>
+                    <Link to='/forgot-password'>Forgot Password</Link>
+                  </div>
                 </Segment>
               </Form>
             )
