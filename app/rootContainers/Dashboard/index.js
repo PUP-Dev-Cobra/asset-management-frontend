@@ -12,7 +12,7 @@ const LoadLedgerDashboard = lazy(() => import('Containers/Ledger'
 ))
 
 const DashboardRoot = props => {
-  const { user_type, email } = userInfo()
+  const { user_type, email, member_id } = userInfo()
   const { match, routes, history, location } = props
   const { isExact } = match
 
@@ -55,6 +55,7 @@ const DashboardRoot = props => {
   useEffect(() => {
     const token = localStorage.getItem('jwt_token', null)
     if (!token) {
+      localStorage.setItem('prevLocation', history.location.pathname)
       history.push('/')
     }
   }, [])
@@ -63,12 +64,18 @@ const DashboardRoot = props => {
     <div className='flex flex-col h-screen'>
       <div className='block'>
         <Menu size='large'>
-          <Menu.Item onClick={() => history.push('/')}>
+          <Menu.Item
+            onClick={() => history.push((member_id) ? `/member/detail/${member_id}` : '/')}
+          >
             <Image src={logoImg} avatar />
           </Menu.Item>
           {
             (user_type === 'teller' || user_type === 'approver') &&
-              <Menu.Item active={match.path === '/member'} link onClick={() => history.push('/member/list')}>
+              <Menu.Item
+                active={match.path === '/member'}
+                link
+                onClick={() => history.push('/member/list')}
+              >
                 Member
               </Menu.Item>
           }

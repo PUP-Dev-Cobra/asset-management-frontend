@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* purgecss start ignore */
+.ui.disabled.dropdown, .disabled.field {
+  opacity: 1 !important;
+}
+/* purgecss end ignore */

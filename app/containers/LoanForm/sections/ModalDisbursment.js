@@ -2,8 +2,11 @@ import React, { useContext, useEffect, useState, Fragment } from 'react'
 import { Form as ReactFinalForm, Field, FormSpy } from 'react-final-form'
 import { Modal, Form, Button, Dimmer, Loader, Message } from 'semantic-ui-react'
 import { useAsync } from 'react-async'
+import { toast } from 'react-toastify'
+import isEmpty from 'lodash/isEmpty'
 
 import { InputField } from 'Components/InputFields'
+import { required } from 'App/validations'
 
 import {
   createDisbursment as createDisbursmentAsync,
@@ -12,17 +15,24 @@ import {
   fetchEncashment as fetchEncashmentAsync
 } from './../async'
 import Context from './../context'
+import dayjs from 'dayjs'
 
 const DisbursmentModal = ({ isOpen, onClose }) => {
   const [initialValues, setInitialValues] = useState({})
   const [encashmentValues, setEncashmentValues] = useState({})
   const [status, setStatus] = useState({})
+  const [currentDate] = useState(dayjs().format('YYYY-MM-DD'))
 
   const onSubmit = values => {
     const newValues = {
       ...values,
       status,
       uuid: initialValues.uuid ? initialValues.uuid : uuid
+    }
+    if (status === 'void') {
+      toast.error('Cheque is void')
+    } else {
+      toast.success('Cheque is disbursed')
     }
     formAsync.run(newValues)
   }
@@ -47,8 +57,10 @@ const DisbursmentModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (disbursmentQuery?.isResolved) {
       setInitialValues(disbursmentQuery?.data?.response)
-      encashmentQuery
-        .run({ uuid: disbursmentQuery?.data?.response?.uuid })
+      if (!isEmpty(disbursmentQuery?.data?.response)) {
+        encashmentQuery
+          .run({ uuid: disbursmentQuery?.data?.response?.uuid })
+      }
     }
   }, [disbursmentQuery?.isResolved])
 
@@ -72,7 +84,7 @@ const DisbursmentModal = ({ isOpen, onClose }) => {
               }}
               open={isOpen}
               onClose={onClose}
-              size='small'
+              size='mini'
               as='form'
               onSubmit={handleSubmit}
             >
@@ -111,6 +123,7 @@ const DisbursmentModal = ({ isOpen, onClose }) => {
                       name='check_voucher'
                       readOnly={initialValues?.uuid}
                       component={InputField}
+                      validate={required}
                     />
                   </Form.Field>
                   <Form.Field>
@@ -119,20 +132,33 @@ const DisbursmentModal = ({ isOpen, onClose }) => {
                       name='check_number'
                       readOnly={initialValues?.uuid}
                       component={InputField}
+                      validate={required}
+                    />
+                  </Form.Field>
+                  <Form.Field>
+                    <label>Signatory</label>
+                    <Field
+                      name='signatory'
+                      readOnly={initialValues?.uuid}
+                      component={InputField}
+                      validate={required}
+                    />
+                  </Form.Field>
+                  <Form.Field>
+                    <label>Cheque Issue Date</label>
+                    <Field
+                      name='issue_date'
+                      readOnly={initialValues?.uuid}
+                      component={InputField}
+                      defaultValue={currentDate}
+                      validate={required}
+                      type='date'
                     />
                   </Form.Field>
                   <FormSpy subscription={{ values: true }}>
                     {
                       form => (
                         <Fragment>
-                          <Form.Field>
-                            <label>Issued At</label>
-                            <input
-                              type='date'
-                              readOnly
-                              value={form?.values?.created_at}
-                            />
-                          </Form.Field>
                           {
                             form?.values?.status &&
                             !encashmentValues.uuid &&
@@ -141,7 +167,7 @@ const DisbursmentModal = ({ isOpen, onClose }) => {
                                   negative={form?.values?.status === 'void'}
                                   info={form?.values?.status === 'issued'}
                                 >
-                              Cheque is {form?.values?.status}
+                                  Cheque is {form?.values?.status}
                                 </Message>
                               </Form.Field>
                           }
@@ -153,30 +179,36 @@ const DisbursmentModal = ({ isOpen, onClose }) => {
               </Modal.Content>
               {
                 !encashmentValues.uuid &&
-                  <Modal.Actions>
+                  <FormSpy subscription={{ invalid: true, pristine: true }}>
                     {
-                      initialValues?.uuid &&
-                        <Button
-                          disabled={formAsync.isPending || disbursmentQuery.isPending}
-                          negative
-                          type='submit'
-                          onClick={() => setStatus('void')}
-                        >
-                          Void Cheque
-                        </Button>
-                    }
-                    {
-                      !initialValues?.uuid &&
-                        <Button
-                          disabled={formAsync.isPending || disbursmentQuery.isPending}
-                          primary
-                          type='submit'
-                          onClick={() => setStatus('issued')}
-                        >
+                      ({ invalid, pristine }) => (
+                        <Modal.Actions>
+                          {
+                              initialValues?.uuid &&
+                                <Button
+                                  disabled={formAsync.isPending || disbursmentQuery.isPending}
+                                  negative
+                                  type='submit'
+                                  onClick={() => setStatus('void')}
+                                >
+                                  Void Cheque
+                                </Button>
+                          }
+                          {
+                            !initialValues?.uuid &&
+                              <Button
+                                disabled={formAsync.isPending || disbursmentQuery.isPending || invalid || pristine}
+                                primary
+                                type='submit'
+                                onClick={() => setStatus('issued')}
+                              >
                           Issue Cheque
-                        </Button>
+                              </Button>
+                          }
+                        </Modal.Actions>
+                      )
                     }
-                  </Modal.Actions>
+                  </FormSpy>
               }
             </Modal>
           )

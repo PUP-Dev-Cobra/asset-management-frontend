@@ -73,7 +73,7 @@ const EncashmenttModal = ({ isOpen, onClose }) => {
               }}
               open={isOpen}
               onClose={onClose}
-              size='small'
+              size='mini'
               as='form'
               onSubmit={handleSubmit}
             >

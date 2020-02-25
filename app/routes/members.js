@@ -18,11 +18,6 @@ export default [
     exact: true
   },
   {
-    path: '/member/create',
-    component: LoadMemberForm,
-    exact: true
-  },
-  {
     path: '/member/:id',
     component: LoadMemberForm,
     exact: true

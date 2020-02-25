@@ -132,13 +132,13 @@ export const fetchEncashment = async args => {
   return responseHandling(res)
 }
 
-export const submitReciept = async args => {
+export const fetchMember = async args => {
+  const uuid = args[0].uuid
   const res = await fetch(
-    `${API_URL}/reciept`,
+    `${API_URL}/member/${uuid}`,
     {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(args[0])
+      method: 'GET',
+      headers
     }
   )
 

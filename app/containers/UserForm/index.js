@@ -21,6 +21,7 @@ const MemberSelection = ({ userType }) => {
       <Field
         name='member_id'
         component={SelectField}
+        disabled
         validate={
           composeValidators(required)
         }
@@ -184,19 +185,22 @@ export default ({ history, match }) => {
                           }
                         />
                       </Form.Field>
-                      <Form.Field>
-                        <label>User Type</label>
-                        <Field
-                          name='user_type'
-                          component={SelectField}
-                          options={userTypes.map(
-                            v => ({ text: v.option_value, value: v.option_value })
-                          )}
-                          validate={
-                            composeValidators(required)
-                          }
-                        />
-                      </Form.Field>
+                      {
+                        !initValues?.user_type === 'member' &&
+                          <Form.Field>
+                            <label>User Type</label>
+                            <Field
+                              name='user_type'
+                              component={SelectField}
+                              options={userTypes.filter(v => v.option_value !== 'member').map(
+                                v => ({ text: v.option_value, value: v.option_value })
+                              )}
+                              validate={
+                                composeValidators(required)
+                              }
+                            />
+                          </Form.Field>
+                      }
                       <FormSpy subscription={{
                         values: { user_type: true }
                       }}
@@ -216,6 +220,21 @@ export default ({ history, match }) => {
                         }
                       </FormSpy>
                     </Form.Group>
+                    <Segment>
+                      <Header as='h3'>Developer Options</Header>
+                      <Form.Group>
+                        <Form.Field>
+                          <div className='flex items-center'>
+                            <Field
+                              component='input'
+                              type='checkbox'
+                              name='backdate'
+                            />
+                            <label className='ml-2'>Backdate User For Loan Elegibility</label>
+                          </div>
+                        </Form.Field>
+                      </Form.Group>
+                    </Segment>
                     <Form.Group
                       width='equal'
                       className='flex justify-end'

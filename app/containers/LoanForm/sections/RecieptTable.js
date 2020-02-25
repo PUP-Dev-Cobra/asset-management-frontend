@@ -5,6 +5,7 @@ import {
   Header,
   Segment
 } from 'semantic-ui-react'
+import dayjs from 'dayjs'
 
 import Context from './../context'
 
@@ -18,7 +19,6 @@ const RecieptTable = props => {
           <Table>
             <Table.Header>
               <Table.Row>
-                <Table.HeaderCell>For Payment Term</Table.HeaderCell>
                 <Table.HeaderCell>OR Number</Table.HeaderCell>
                 <Table.HeaderCell>Amount</Table.HeaderCell>
                 <Table.HeaderCell>Paid At</Table.HeaderCell>
@@ -28,10 +28,9 @@ const RecieptTable = props => {
               {
                 reciepts.map(r => (
                   <Table.Row key={r.uuid}>
-                    <Table.Cell>{r.loan_payment_term}</Table.Cell>
                     <Table.Cell>{r.or_number}</Table.Cell>
                     <Table.Cell>{r.amount}</Table.Cell>
-                    <Table.Cell>date</Table.Cell>
+                    <Table.Cell>{dayjs(r.created_at).format('LLLL')}</Table.Cell>
                   </Table.Row>
                 ))
               }

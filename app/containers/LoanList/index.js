@@ -45,10 +45,9 @@ export default ({ history, location }) => {
                   <Table.Row>
                     <Table.HeaderCell>Name</Table.HeaderCell>
                     <Table.HeaderCell>Date of Birth</Table.HeaderCell>
-                    <Table.HeaderCell>Amount</Table.HeaderCell>
-                    <Table.HeaderCell>Remaining</Table.HeaderCell>
+                    <Table.HeaderCell>Collateral Used</Table.HeaderCell>
+                    <Table.HeaderCell>Balance</Table.HeaderCell>
                     <Table.HeaderCell>Status</Table.HeaderCell>
-                    <Table.HeaderCell>Payment Start Date</Table.HeaderCell>
                     <Table.HeaderCell>Created Date</Table.HeaderCell>
                     <Table.HeaderCell>Updated Date</Table.HeaderCell>
                   </Table.Row>
@@ -81,15 +80,14 @@ export default ({ history, location }) => {
                           <Table.Cell>
                             {`${r.loan_amount.toLocaleString()}`}
                           </Table.Cell>
-                          <Table.Cell>XXXX</Table.Cell>
+                          <Table.Cell>
+                            {r.remaining_balance?.toLocaleString()}
+                          </Table.Cell>
                           <Table.Cell
                             positive={(r.status === 'approved')}
                             negative={(r.status === 'rejected')}
                           >
                             {`${r.status}`}
-                          </Table.Cell>
-                          <Table.Cell>
-                            {`${r.loan_payment_start_date}`}
                           </Table.Cell>
                           <Table.Cell>
                             {dayjs(r.created_at).format('LLL')}
@@ -105,7 +103,7 @@ export default ({ history, location }) => {
 
                 <Table.Footer>
                   <Table.Row>
-                    <Table.HeaderCell colSpan={7}>
+                    <Table.HeaderCell colSpan={6}>
                         Total Loans
                     </Table.HeaderCell>
                     <Table.HeaderCell>

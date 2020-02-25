@@ -3,6 +3,7 @@ import {
   Grid,
   Segment,
   List,
+  Progress,
   Statistic
 } from 'semantic-ui-react'
 import { FormSpy } from 'react-final-form'
@@ -17,13 +18,16 @@ const Computations = props => {
     roundNumbers,
     serviceCharge,
     setNetpayAmount,
+    loanStatus,
+    netLoanAmount,
+    outstandingBalance,
     setTotalPaymentLoan,
     totalLoanableShares
   } = useContext(Context)
   let netPaypermonth = 0
 
   return (
-    <Grid.Column computer={6} verticalAlign='middle'>
+    <Grid.Column computer={6}>
       <FormSpy subscription={{ values: true }}>
         {
           props => {
@@ -37,7 +41,8 @@ const Computations = props => {
             const netLoanPayment = loanAmount - capitalBuildUpPayment - interestChargePayment - serviceChargePayment
 
             netPaypermonth = netLoanPayment / payTerm ?? 0
-            setNetpayAmount(netPaypermonth)
+
+            setNetpayAmount(netPaypermonth ?? 0)
             setTotalPaymentLoan(netLoanPayment)
 
             return (
@@ -101,9 +106,10 @@ const Computations = props => {
                       floated='right'
                     >
                       {
-                        roundNumbers(
-                          parseFloat(netPaypermonth)
-                        )
+                        !isNaN(netPaypermonth)
+                          ? roundNumbers(
+                            parseFloat(netPaypermonth)
+                          ) : 0
                       }
                     </List.Content>
                     <List.Content>
@@ -116,20 +122,39 @@ const Computations = props => {
           }
         }
       </FormSpy>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center'
-        }}
-      >
-        <Segment>
-          <Statistic
-            size='tiny'
-            label='Total Loanable Shares In Cash'
-            value={totalLoanableShares.toLocaleString()}
-          />
-        </Segment>
-      </div>
+      {
+        loanStatus === 'approved' &&
+          <div className='flex justify-center'>
+            <Segment>
+              <Statistic>
+                <Statistic.Value>
+                  {
+                    outstandingBalance.toLocaleString()
+                  }
+                </Statistic.Value>
+                <Statistic.Label>Oustanding Balance</Statistic.Label>
+              </Statistic>
+              <Progress
+                percent={(outstandingBalance / netLoanAmount) * 100 - 100}
+                attached='bottom'
+              />
+            </Segment>
+          </div>
+      }
+      {
+        loanStatus === 'pending' &&
+          <div
+            className='flex justify-center'
+          >
+            <Segment>
+              <Statistic
+                size='tiny'
+                label='Usable Collateral'
+                value={totalLoanableShares.toLocaleString()}
+              />
+            </Segment>
+          </div>
+      }
     </Grid.Column>
   )
 }

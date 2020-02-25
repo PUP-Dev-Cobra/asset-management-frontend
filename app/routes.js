@@ -7,6 +7,7 @@ const LoadLogin = lazy(() => import('Containers/Login' /* webpackChunkName: "Con
 const LoadDashboardRoot = lazy(() => import('RootContainers/Dashboard' /* webpackChunkName: "RootContainers-SampleRoot" */))
 const LoadForgotPassword = lazy(() => import('Containers/ForgotPassword' /* webpackChunkName: "Container-Forgot-Password" */))
 const LoadResetPassword = lazy(() => import('Containers/ResetPassword' /* webpackChunkName: "Container-Reset-Password" */))
+const LoadMemberForm = lazy(() => import('Containers/MemberForm' /* webpackChunkName: "Container-Member-Form" */))
 
 const routes = [
   {
@@ -32,6 +33,16 @@ const routes = [
   {
     path: '/member',
     redirect: '/member/list',
+    exact: true
+  },
+  {
+    path: '/member/create',
+    component: LoadMemberForm,
+    exact: true
+  },
+  {
+    path: '/member/preview/:id',
+    component: LoadMemberForm,
     exact: true
   },
   {

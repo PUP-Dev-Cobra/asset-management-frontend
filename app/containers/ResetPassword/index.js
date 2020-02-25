@@ -27,6 +27,10 @@ export default ({ match, history }) => {
     }
   }, [resetQuery?.isResolved])
 
+  useEffect(() => {
+    localStorage.clear()
+  }, [])
+
   return (
     <Grid centered className='h-screen' verticalAlign='middle'>
       <Grid.Column className='max-w-lg w-full'>
