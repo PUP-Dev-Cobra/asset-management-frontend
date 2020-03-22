@@ -15,14 +15,40 @@ import { Form as ReactForm, Field } from 'react-final-form'
 import { authenticate } from './async'
 import logoImg from 'Assets/logo.jpg'
 
+const redirect = (userType, memberId) => {
+  switch (userType) {
+    case 'admin':
+      location.href = '/user/list'
+      break
+    case 'member':
+      location.href = `/member/detail/${memberId}`
+      break
+    case 'approver':
+      location.href = '/loan/list'
+      break
+    case 'teller':
+      location.href = 'member/list'
+  }
+}
+
 const LoginForm = ({ history }) => {
-  const { data, error, isPending, run } = useAsync({
+  const { data, error, isPending, isResolved, run } = useAsync({
     deferFn: authenticate
   })
 
   const onSubmit = values => {
     run({ ...values })
   }
+
+  useEffect(() => {
+    const jwt = localStorage.getItem('jwt_token')
+    if (jwt) {
+      const dateToken = jwt.split('.')
+      const { user_type, member_id } = JSON.parse(atob(dateToken[1]))
+
+      redirect(user_type, member_id)
+    }
+  }, [])
 
   useEffect(() => {
     if (data) {
@@ -32,21 +58,9 @@ const LoginForm = ({ history }) => {
 
       localStorage.setItem('user_type', user_type)
       localStorage.setItem('member_id', member_id)
-      switch (user_type) {
-        case 'admin':
-          location.href = '/user/list'
-          break
-        case 'member':
-          location.href = `/member/detail/${member_id}`
-          break
-        case 'approver':
-          location.href = '/loan/list'
-          break
-        case 'teller':
-          location.href = 'member/list'
-      }
+      redirect(user_type, member_id)
     }
-  }, [data])
+  }, [isResolved])
 
   return (
     <Grid textAlign='center' className='h-screen' verticalAlign='middle' relaxed='very' stackable>
@@ -94,7 +108,8 @@ const LoginForm = ({ history }) => {
                   <Button primary type='submit'>
                     Login
                   </Button>
-                  <div className='py-2 flex justify-end'>
+                  <div className='py-2 flex justify-between'>
+                    <Link to='/member/create'>Join Cooperative</Link>
                     <Link to='/forgot-password'>Forgot Password</Link>
                   </div>
                 </Segment>

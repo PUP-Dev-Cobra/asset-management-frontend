@@ -21,7 +21,7 @@ const ShareRow = props => {
           >
             <Statistic
               size='tiny'
-              label='Member Shares In Cash'
+              label='Available Collateral'
               value={memberShareValue.toLocaleString()}
             />
           </div>
@@ -31,7 +31,7 @@ const ShareRow = props => {
         <Segment>
           <Statistic
             size='tiny'
-            label='Co Maker 1 Shares In Cash'
+            label='Available Collateral'
             value={coMaker1ShareValue.toLocaleString()}
           />
         </Segment>

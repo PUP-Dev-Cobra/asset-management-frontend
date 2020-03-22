@@ -1,4 +1,6 @@
 import { API_URL } from 'App/constants'
+import { responseHandling } from 'App/async'
+
 import qs from 'query-string'
 
 import { headers } from 'App/utils'
@@ -14,12 +16,7 @@ export const option = async args => {
     }
   )
 
-  if (res.status !== 200) {
-    const body = await res.json()
-    throw new Error(body.error).message
-  }
-
-  return res.json()
+  return responseHandling(res)
 }
 
 export const create = async args => {
@@ -32,12 +29,7 @@ export const create = async args => {
     }
   )
 
-  if (res.status !== 200) {
-    const body = await res.json()
-    throw new Error(body.error).message
-  }
-
-  return res.json()
+  return responseHandling(res)
 }
 
 export const update = async args => {
@@ -50,12 +42,7 @@ export const update = async args => {
     }
   )
 
-  if (res.status !== 200) {
-    const body = await res.json()
-    throw new Error(body.error).message
-  }
-
-  return res.json()
+  return responseHandling(res)
 }
 
 export const fetchMember = async args => {
@@ -67,10 +54,5 @@ export const fetchMember = async args => {
     }
   )
 
-  if (res.status !== 200) {
-    const body = await res.json()
-    throw new Error(body.error).message
-  }
-
-  return res.json()
+  return responseHandling(res)
 }

@@ -4,6 +4,7 @@ import React, { Suspense } from 'react'
 import { hot } from 'react-hot-loader'
 import ReactDOM from 'react-dom'
 import LocalizedFormat from 'dayjs/plugin/localizedFormat'
+import relativeTime from 'dayjs/plugin/relativeTime'
 import dayjs from 'dayjs'
 import { ToastContainer } from 'react-toastify'
 
@@ -15,6 +16,7 @@ const env = process.env.NODE_ENV
 
 const App = () => {
   dayjs.extend(LocalizedFormat)
+  dayjs.extend(relativeTime)
   return (
     <Router>
       <Suspense fallback={<p>Loading</p>}>

@@ -1,209 +1,158 @@
-import React, { useEffect, useState, Fragment } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
-  Button,
+  Tab,
   Grid,
   Label,
-  Header,
-  Icon,
-  List,
+  Statistic,
   Segment
 } from 'semantic-ui-react'
 import { useAsync } from 'react-async'
 import dayjs from 'dayjs'
 
+import Context from './context'
+import Invoices from './sections/Invoices'
+import Loans from './sections/Loans'
+import MemberActions from './sections/MemberActions'
+import Reciepts from './sections/Reciepts'
+import { fetchMember, validateLoanQualifier } from './async'
 import { userInfo } from 'Helpers/utils'
-import { fetchMember } from 'Containers/MemberForm/async'
-import { fetchRecieptAsync } from './async'
 
-export default ({ history, match }) => {
-  const [memberInfo, setMemberInfo] = useState({})
-  const [recieptList, setRecieptList] = useState([])
+const panes = [
+  { menuItem: 'Invoices', render: () => <Tab.Pane><Invoices /></Tab.Pane> },
+  { menuItem: 'Loans', render: () => <Tab.Pane><Loans /></Tab.Pane> },
+  { menuItem: 'Reciepts', render: () => <Tab.Pane><Reciepts /></Tab.Pane> }
+]
+
+export default ({ history, match, location }) => {
+  const params = new URLSearchParams(location.search)
   const { user_type } = userInfo()
+
+  const [paneIndex, setPaneIndex] = useState(params.get('panel') || 0)
+  const [memberInfo, setMemberInfo] = useState({})
+  const [invoices, setInvoices] = useState([])
+  const [loans, setLoans] = useState([])
+  const [loanErrors, setLoanErrors] = useState(null)
+  const [reciepts, setReciepts] = useState([])
+
+  const onChangePane = (e, { activeIndex }) => setPaneIndex(activeIndex)
 
   const fetchMemberQuery = useAsync({
     promiseFn: fetchMember,
+    deferFn: fetchMember,
     uuid: match?.params?.id
   })
 
-  const fetchRecieptsQuery = useAsync({
-    promiseFn: fetchRecieptAsync,
+  const fetchLoanQualify = useAsync({
+    promiseFn: validateLoanQualifier,
     uuid: match?.params?.id
   })
 
   useEffect(() => {
     if (fetchMemberQuery?.isResolved) {
-      setMemberInfo(fetchMemberQuery?.data)
+      const { invoices, loans, reciepts, ...memberData } = fetchMemberQuery?.data
+      setInvoices(invoices)
+      setLoans(loans)
+      setMemberInfo(memberData)
+      setReciepts(reciepts)
     }
   }, [fetchMemberQuery?.isResolved])
 
   useEffect(() => {
-    if (fetchRecieptsQuery?.isResolved) {
-      setRecieptList(fetchRecieptsQuery?.data?.response)
+    if (fetchLoanQualify.data) {
+      const response = fetchLoanQualify?.data?.response
+      setLoanErrors((response.length > 0) ? response : null)
     }
-  }, [fetchRecieptsQuery?.isResolved])
+  }, [fetchLoanQualify.isResolved])
 
   return (
-    <Grid centered container padded='vertically'>
-      <Grid.Column computer={14}>
-        <Grid>
-          <Grid.Row stretched>
-            <Grid.Column>
-              <Segment>
-                <ul className='block'>
-                  <li className='flex justify-between items-center my-5'>
+    <Context.Provider
+      value={{
+        invoices,
+        loans,
+        reciepts,
+        loanErrors,
+        runMember: fetchMemberQuery.run,
+        member_id: match?.params?.id
+      }}
+    >
+      <Grid centered container padded='vertically'>
+        <Grid.Column computer={14}>
+          <Grid>
+            <Grid.Row stretched>
+              <Grid.Column>
+                <Segment
+                  compact
+                  className='relative'
+                  onClick={() => history.push(`/member/${match?.params?.id}`)}
+                  loading={fetchMemberQuery?.isPending}
+                >
+                  <div className='flex justify-between'>
                     <div>
-                      <Label
-                        horizontal
-                        color={(memberInfo?.status === 'approved') ? 'green' : 'grey'}
-                      >
-                        {memberInfo?.status}
-                      </Label>
-                    </div>
-                    {
-                      user_type !== 'member' &&
-                        <Button
-                          icon
-                          onClick={() => history.push(`/member/${match?.params?.id}`)}
-                        >
-                          <Icon name='edit' />
-                        </Button>
-                    }
-                  </li>
-                  <li>
-                    <dl className='flex text-lg'>
-                      <div className='flex-1'>
-                        <dt className='font-bold'>Name</dt>
-                        <dd className='pb-2'>
-                          {
-                            `
-                              ${memberInfo?.last_name},
-                              ${memberInfo?.first_name}
-                            `
-                          }
-                          {
-                            memberInfo?.middle_name &&
-                            `,${memberInfo?.middle_name}`
-                          }
-                        </dd>
-                        <dt className='font-bold'>Nickname</dt>
-                        <dd className='pb-2'>
-                          {
-                            `${memberInfo?.nickname}`
-                          }
-                        </dd>
-                        <dt className='font-bold'>Date of Birth</dt>
-                        <dd className='pb-2'>
-                          {
-                            dayjs(memberInfo?.dob).format('ll')
-                          }
-                        </dd>
-                        <dt className='font-bold'>Age</dt>
-                        <dd className='pb-2'>
-                          {
-                            dayjs().diff(memberInfo?.dob, 'years')
-                          }
-                        </dd>
-                        <dt className='font-bold'>Gender</dt>
-                        <dd className='pb-2'>
-                          {
-                            memberInfo?.gender
-                          }
-                        </dd>
-                      </div>
-                      <div className='flex-1'>
-                        <dt className='font-bold'>Religion</dt>
-                        <dd className='pb-2'>
-                          {
-                            memberInfo?.religion
-                          }
-                        </dd>
-                        <dt className='font-bold'>Civil Status</dt>
-                        <dd className='pb-2'>
-                          {
-                            memberInfo?.civil_status
-                          }
-                        </dd>
+                      <h1 className='my-2'>
                         {
-                          memberInfo?.spouse_name &&
-                            <Fragment>
-                              <dt className='font-bold'>Spouse Name</dt>
-                              <dd className='pb-2'>
-                                {
-                                  memberInfo?.spouse_name
-                                }
-                              </dd>
-                            </Fragment>
+                          `
+                          ${memberInfo?.last_name},
+                          ${memberInfo?.first_name}
+                          `
                         }
-                        <dt className='font-bold'>Home Address</dt>
-                        <dd className='pb-2'>
-                          {
-                            memberInfo?.address
-                          }
-                        </dd>
-                        <dt className='font-bold'>Contact-No</dt>
-                        <dd className='pb-2'>
-                          {
-                            memberInfo?.contact_no
-                          }
-                        </dd>
-                      </div>
-                    </dl>
-                  </li>
-                </ul>
-              </Segment>
-            </Grid.Column>
-          </Grid.Row>
-
-          <Grid.Row stretched columns='equal'>
-            <Grid.Column>
-              <Segment>
-                <Header>Loan History</Header>
-                <List divided verticalAlign='middle' selection>
-                  {
-                    memberInfo?.loans?.map(r => (
-                      <List.Item key={r.uuid} onClick={() => history.push(`/loan/${r.uuid}`)}>
-                        <List.Content floated='right'>
-                          {r?.loan_amount}
-                        </List.Content>
-                        <List.Content>
-                          <Label
-                            horizontal
-                            color={r?.status === 'approved' && 'green'}
-                            className='w-20'
-                          >
-                            {r?.status}
-                          </Label>
-                          {dayjs(r?.created_at).format('lll')}
-                        </List.Content>
-                      </List.Item>
-                    ))
-                  }
-                </List>
-              </Segment>
-            </Grid.Column>
-            <Grid.Column>
-              <Segment>
-                <Header>Payment History</Header>
-                <List divided selection verticalAlign='middle'>
-                  {
-                    recieptList?.map(r => (
-                      <List.Item key={r.uuid}>
-                        <List.Content floated='right'>
-                          {r.amount}
-                        </List.Content>
-                        <List.Content>
-                          {r.or_number}
-                        </List.Content>
-                      </List.Item>
-                    ))
-                  }
-                </List>
-              </Segment>
-            </Grid.Column>
-          </Grid.Row>
-        </Grid>
-      </Grid.Column>
-    </Grid>
-
+                      </h1>
+                      <h2 className='my-0 font-normal text-xl'>name</h2>
+                    </div>
+                    <div className='self-end'>
+                      Member Since <span className='italic' title={dayjs(memberInfo?.created_at).fromNow()}>{dayjs(memberInfo?.created_at).format('LL')}</span>
+                    </div>
+                  </div>
+                  <Label
+                    className='absolute top-0 right-0'
+                    color={(memberInfo?.status === 'approved') ? 'green' : 'grey'}
+                  >
+                    {memberInfo?.status}
+                  </Label>
+                </Segment>
+              </Grid.Column>
+            </Grid.Row>
+            <Grid.Row columns='equal'>
+              {
+                fetchMemberQuery?.isResolved && user_type === 'member' &&
+                  <MemberActions />
+              }
+              <Grid.Column>
+                <div className='flex justify-end'>
+                  <div className='mx-2'>
+                    <Segment>
+                      <Statistic size='small'>
+                        <Statistic.Value>
+                          {memberInfo?.available_collateral?.toLocaleString()}
+                        </Statistic.Value>
+                        <Statistic.Label>
+                          Available Collateral
+                        </Statistic.Label>
+                      </Statistic>
+                    </Segment>
+                  </div>
+                  <div>
+                    <Segment>
+                      <Statistic size='small'>
+                        <Statistic.Value>
+                          {memberInfo?.outstanding_invoice?.toLocaleString()}
+                        </Statistic.Value>
+                        <Statistic.Label>
+                          Outsanding Balance
+                        </Statistic.Label>
+                      </Statistic>
+                    </Segment>
+                  </div>
+                </div>
+              </Grid.Column>
+            </Grid.Row>
+            <Grid.Row stretched>
+              <Grid.Column>
+                <Tab panes={panes} activeIndex={paneIndex} onTabChange={onChangePane} />
+              </Grid.Column>
+            </Grid.Row>
+          </Grid>
+        </Grid.Column>
+      </Grid>
+    </Context.Provider>
   )
 }

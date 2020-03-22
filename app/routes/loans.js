@@ -11,7 +11,7 @@ export default [
     exact: true
   },
   {
-    path: '/loan/create',
+    path: '/loan/create/:id',
     component: LoadLoanForm,
     exact: true
   },
